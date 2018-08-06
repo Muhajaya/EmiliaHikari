@@ -189,89 +189,6 @@ def ramalan(bot: Bot, update: Update):
 	bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
 	update.effective_message.reply_text(random.choice(RAMALAN_STRINGS))    
 
-
-@run_async
-def cuaca(bot: Bot, update: Update, args: List[str]):
-	location = " ".join(args)
-	if location.lower() == bot.first_name.lower():
-		update.effective_message.reply_text("Saya akan terus mengawasi di saat senang maupun sedih!")
-		bot.send_sticker(update.effective_chat.id, BAN_STICKER)
-		return
-
-	try:
-		bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
-		owm = pyowm.OWM(API_WEATHER, language='id')
-		observation = owm.weather_at_place(location)
-		cuacanya = observation.get_weather()
-		obs = owm.weather_at_place(location)
-		lokasi = obs.get_location()
-		lokasinya = lokasi.get_name()
-		# statusnya = cuacanya._detailed_status
-		temperatur = cuacanya.get_temperature(unit='celsius')['temp']
-		fc = owm.three_hours_forecast(location)
-		besok = fc.get_weather_at(timeutils.tomorrow(5))
-		# statusbesok = besok._detailed_status
-		temperaturbesok = besok.get_temperature(unit='celsius')['temp']
-
-		# Simbol cuaca
-		statusnya = ""
-		cuacaskrg = cuacanya.get_weather_code()
-		if cuacaskrg < 232: # Hujan badai
-			statusnya += "⛈️ "
-		elif cuacaskrg < 321: # Gerimis
-			statusnya += "🌧️ "
-		elif cuacaskrg < 504: # Hujan terang
-			statusnya += "🌦️ "
-		elif cuacaskrg < 531: # Hujan berawan
-			statusnya += "⛈️ "
-		elif cuacaskrg < 622: # Bersalju
-			statusnya += "🌨️ "
-		elif cuacaskrg < 781: # Atmosfer
-			statusnya += "🌪️ "
-		elif cuacaskrg < 800: # Cerah
-			statusnya += "🌤️ "
-		elif cuacaskrg < 801: # Sedikit berawan
-			statusnya += "⛅️ "
-		elif cuacaskrg < 804: # Berawan
-			statusnya += "☁️ "
-		statusnya += cuacanya._detailed_status
-					
-		statusbesok = ""
-		cuacaskrg = besok.get_weather_code()
-		if cuacaskrg < 232: # Hujan badai
-			statusbesok += "⛈️ "
-		elif cuacaskrg < 321: # Gerimis
-			statusbesok += "🌧️ "
-		elif cuacaskrg < 504: # Hujan terang
-			statusbesok += "🌦️ "
-		elif cuacaskrg < 531: # Hujan berawan
-			statusbesok += "⛈️ "
-		elif cuacaskrg < 622: # Bersalju
-			statusbesok += "🌨️ "
-		elif cuacaskrg < 781: # Atmosfer
-			statusbesok += "🌪️ "
-		elif cuacaskrg < 800: # Cerah
-			statusbesok += "🌤️ "
-		elif cuacaskrg < 801: # Sedikit berawan
-			statusbesok += "⛅️ "
-		elif cuacaskrg < 804: # Berawan
-			statusbesok += "☁️ "
-		statusbesok += besok._detailed_status
-					
-
-		cuacabsk = besok.get_weather_code()
-
-		update.message.reply_text("{} hari ini sedang {}, sekitar {}°C.\n".format(lokasinya,
-				statusnya, temperatur) +
-				"Untuk besok pada pukul 06:00, akan {}, sekitar {}°C".format(statusbesok, temperaturbesok))
-
-	except exceptions.not_found_error.NotFoundError:
-		update.effective_message.reply_text("Maaf, lokasi tidak ditemukan 😞")
-	except pyowm.exceptions.api_call_error.APICallError:
-		update.effective_message.reply_text("Tulis lokasi untuk mengecek cuacanya")
-	else:
-		return
-
 @run_async
 def terjemah(bot: Bot, update: Update):
 	msg = update.effective_message
@@ -555,7 +472,6 @@ __help__ = """
  - /ping: mengecek kecepatan bot
  - /getsticker: mendapatkan gambar dari stiker
  - /ramalan: cek ramalan kamu hari ini
- - /cuaca <kota>: mendapatkan info cuaca di tempat tertentu
  - /tr <target> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
  - /wiki <teks>: mencari teks yang ditulis dari sumber wikipedia
  - /kbbi <teks>: mencari teks yang ditulis dari kamus besar bahasa indonesia
@@ -575,7 +491,6 @@ FILE_HANDLER = CommandHandler("file", file, filters=Filters.user(OWNER_ID))
 GETLINK_HANDLER = CommandHandler("getlink", getlink, pass_args=True, filters=Filters.user(OWNER_ID))
 LEAVECHAT_HANDLER = CommandHandler("leavechat", leavechat, pass_args=True, filters=Filters.user(OWNER_ID))
 RAMALAN_HANDLER = DisableAbleCommandHandler("ramalan", ramalan)
-CUACA_HANDLER = DisableAbleCommandHandler("cuaca", cuaca, pass_args=True)
 TERJEMAH_HANDLER = DisableAbleCommandHandler("tr", terjemah)
 WIKIPEDIA_HANDLER = DisableAbleCommandHandler("wiki", wiki)
 KBBI_HANDLER = DisableAbleCommandHandler("kbbi", kamusbesarbahasaindonesia)
@@ -594,7 +509,6 @@ dispatcher.add_handler(FILE_HANDLER)
 dispatcher.add_handler(GETLINK_HANDLER)
 dispatcher.add_handler(LEAVECHAT_HANDLER)
 dispatcher.add_handler(RAMALAN_HANDLER)
-dispatcher.add_handler(CUACA_HANDLER)
 dispatcher.add_handler(TERJEMAH_HANDLER)
 dispatcher.add_handler(WIKIPEDIA_HANDLER)
 dispatcher.add_handler(KBBI_HANDLER)
