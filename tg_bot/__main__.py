@@ -52,10 +52,7 @@ setiap sumbangan membantu dan memotivasi dia untuk membuat saya lebih baik.
 Semua uang sumbangan akan diberikan ke VPS yang lebih baik untuk menjadi tuan rumah saya, dan atau beberapa makanan. \
 Dia hanya orang biasa, jadi akan sangat membantu dia!
 
-Jika anda memang berminat untuk donate, silahkan PM [pencipta saya](tg://user?id=388576209), Terima kasih 😁
-
-Saat ini hanya [@Rapipsaf](tg://user?id=552372515) dan [@ZKaruniaRamadhanii](tg://user?id=309641259) saja yang baru mendonasi pencipta saya 😔
-Terima kasih ya yang udah mendonasi pencipta saya 😘"""
+Jika anda memang berminat untuk donate, silahkan PM [pencipta saya](tg://user?id=388576209), Terima kasih 😁"""
 
 IMPORTED = {}
 MIGRATEABLE = []
@@ -195,7 +192,7 @@ def help_button(bot: Bot, update: Update):
             query.message.reply_text(text=text,
                                      parse_mode=ParseMode.MARKDOWN,
                                      reply_markup=InlineKeyboardMarkup(
-                                         [[InlineKeyboardButton(text="Back", callback_data="help_back")]]))
+                                         [[InlineKeyboardButton(text="Kembali", callback_data="help_back")]]))
 
         elif prev_match:
             curr_page = int(prev_match.group(1))
@@ -241,7 +238,7 @@ def get_help(bot: Bot, update: Update):
         # update.effective_message.reply_text("Contact me in PM to get the list of possible commands.",
         update.effective_message.reply_text("Hubungi saya di PM untuk mendapatkan daftar perintah.",
                                             reply_markup=InlineKeyboardMarkup(
-                                                [[InlineKeyboardButton(text="Help",
+                                                [[InlineKeyboardButton(text="Tolong",
                                                                        url="t.me/{}?start=help".format(
                                                                            bot.username))]]))
         return
@@ -250,7 +247,7 @@ def get_help(bot: Bot, update: Update):
         module = args[1].lower()
         text = "Ini adalah bantuan yang tersedia untuk modul *{}*:\n".format(HELPABLE[module].__mod_name__) \
                + HELPABLE[module].__help__
-        send_help(chat.id, text, InlineKeyboardMarkup([[InlineKeyboardButton(text="Back", callback_data="help_back")]]))
+        send_help(chat.id, text, InlineKeyboardMarkup([[InlineKeyboardButton(text="Kembali", callback_data="help_back")]]))
 
     else:
         send_help(chat.id, HELP_STRINGS)
@@ -301,7 +298,7 @@ def settings_button(bot: Bot, update: Update):
             query.message.reply_text(text=text,
                                      parse_mode=ParseMode.MARKDOWN,
                                      reply_markup=InlineKeyboardMarkup(
-                                         [[InlineKeyboardButton(text="Back",
+                                         [[InlineKeyboardButton(text="Kembali",
                                                                 callback_data="stngs_back({})".format(chat_id))]]))
 
         elif prev_match:
