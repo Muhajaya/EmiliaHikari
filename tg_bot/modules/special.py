@@ -1,7 +1,6 @@
 import html
 import json
 import random
-import PIL
 import os
 import urllib
 import datetime
@@ -13,14 +12,12 @@ from pyowm import timeutils, exceptions
 from googletrans import Translator
 import wikipedia
 from kbbi import KBBI
-import base64
-from PIL import Image
 
 import requests
 from telegram.error import BadRequest, Unauthorized
 from telegram import Message, Chat, Update, Bot, MessageEntity
 from telegram import ParseMode
-from telegram.ext import CommandHandler, run_async, Filters, MessageHandler
+from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
 
 from tg_bot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, API_WEATHER, API_ANIME
@@ -277,187 +274,6 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 	else:
 		return
 
-
-@run_async
-def anime(bot: Bot, update: Update):
-	msg = update.effective_message
-	chat_id = update.effective_chat.id
-	if msg.reply_to_message:
-		msg = update.effective_message
-		message = update.effective_message
-		if msg.reply_to_message.photo:
-			doc_id = msg.reply_to_message.photo[-1].file_id
-			bot.sendChatAction(update.effective_chat.id, "record_video")
-			newFile = bot.get_file(doc_id)
-			newFile.download('anime.jpg')
-		elif msg.reply_to_message.document:
-			doc_id = msg.reply_to_message.document.thumb.file_id
-			bot.sendChatAction(update.effective_chat.id, "record_video")
-			newFile = bot.get_file(doc_id)
-			newFile.download('anime.jpg')
-		elif msg.reply_to_message.sticker:
-			doc_id = msg.reply_to_message.sticker.thumb.file_id
-			bot.sendChatAction(update.effective_chat.id, "record_video")
-			newFile = bot.get_file(doc_id)
-			newFile.download('anime.jpg')
-		elif msg.reply_to_message.video:
-			doc_id = msg.reply_to_message.video.thumb.file_id
-			bot.sendChatAction(update.effective_chat.id, "record_video")
-			newFile = bot.get_file(doc_id)
-			newFile.download('anime.jpg')
-		else:
-			update.effective_message.reply_text("Balas pesan gambar/gif/video/stiker untuk mencari info animenya")
-			return
-
-		ngecek = bot.sendMessage(chat_id, "Sebentar ya, lagi di cari tau 🤥", parse_mode='markdown', reply_to_message_id=message.message_id)
-		# Ubah ukurannya
-		basewidth = 300
-		img = Image.open('anime.jpg')
-		if not img.mode == 'RGB':
-			img = img.convert('RGB')
-		wpercent = (basewidth / float(img.size[0]))
-		hsize = int((float(img.size[1]) * float(wpercent)))
-		img = img.resize((basewidth, hsize), PIL.Image.ANTIALIAS)
-		img.save('anime.jpg')
-
-		foto = open('anime.jpg', 'rb')
-		img = foto.read()
-		b64 = base64.b64encode(img)
-
-		script = 'curl -X POST https://whatanime.ga/api/search?token=b4c29ee1c0cfa71f54d85ccd71a5db3a5757f8db -d "image=data:image/jpeg;base64,$(base64 -w 0 anime.jpg)" > hasil.txt'
-		bot.sendChatAction(update.effective_chat.id, "record_video")
-		test = os.system(script)
-		with open("hasil.txt", "r") as f:
-			for line in f:
-				d = json.loads(line)
-				docs = d['docs']
-				try:
-					animenya = docs[0]
-				except IndexError:
-					bot.deleteMessage(chat_id, ngecek.message_id)
-					msg.reply_text("Maaf, saya tidak tahu anime itu 😥")
-					return
-				mirip = animenya['similarity']*100
-				kemiripan = str(mirip)[:5]
-				hasilnya = "*Menurut saya {}%*".format(kemiripan)
-				hasilnya += "\nAnime: `{}` / `{}` / `{}`".format(animenya['title_native'], animenya['title_romaji'], animenya['title_english'])
-				detiknya = str(animenya['at'])
-				detiknya = str(datetime.timedelta(seconds=int(detiknya.split('.')[0])))
-				hasilnya += "\nEpisode: `{}` - `{}`".format(animenya['episode'], detiknya)
-				if animenya['season']:
-					hasilnya += "\nMusim: `{}`".format(animenya['season'])
-				else:
-					pass
-				try:
-					hasilnya += "\nSinonim: `{sinonimnya}`".format(sinonimnya=animenya['synonyms'][0])
-				except:
-					hasilnya += "\nSinonim: `{sinonimnya}`".format(sinonimnya="Tidak ada")
-				if animenya['is_adult'] == 'true':
-					hasilnya += "\nKonten dewasa: `Ya`"
-				else:
-					hasilnya += "\nKonten dewasa: `Tidak`"
-				NamaEncoded = urllib.parse.quote(animenya['filename'], safe='')
-				LinkURL = "https://whatanime.ga/preview.php?anilist_id={anilist_id}&file={NamaEncoded}&t={at}&token={tokenthumb}".format(anilist_id=animenya['anilist_id'], NamaEncoded=NamaEncoded, at=animenya['at'], tokenthumb=animenya['tokenthumb'])
-				f = open('anime-preview.mp4','wb')
-				f.write(requests.get(LinkURL).content)
-				f.close()
-				captionvideo = "*Menurut saya {}%*\nAnime `{}` / `{}` di episode `{}` pada `{}`".format(kemiripan, animenya['title_native'], animenya['title_romaji'], animenya['episode'], detiknya)
-				bot.deleteMessage(chat_id, ngecek.message_id)
-				bot.sendVideo(chat_id, video=open('anime-preview.mp4', 'rb'), caption=captionvideo, parse_mode='markdown', reply_to_message_id=message.message_id)
-				try:
-					if animenya['mal_id']:
-						buttoninline = """{
-										  "inline_keyboard": [
-											[
-											  {
-												"text": "AniList",
-												"url": "https://anilist.co/anime/""" + str(animenya['anilist_id']) + """"
-											  },
-											  {
-												"text": "MyAnimeList",
-												"url": "https://myanimelist.net/anime/""" + str(animenya['mal_id']) + """"
-											  }
-											]
-										  ]
-										}"""
-						bot.sendMessage(chat_id, hasilnya, parse_mode='markdown', reply_to_message_id=message.message_id, reply_markup=buttoninline)
-					else:
-						buttoninline = """{
-									  "inline_keyboard": [
-										[
-										  {
-											"text": "AniList",
-											"url": "https://anilist.co/anime/""" + str(animenya['anilist_id']) + """"
-										  }
-										]
-									  ]
-									}"""
-						bot.sendMessage(chat_id, hasilnya, parse_mode='markdown', reply_to_message_id=message.message_id, reply_markup=buttoninline)
-				except KeyError:
-					bot.sendMessage(chat_id, hasilnya, parse_mode='markdown', reply_to_message_id=message.message_id)
-
-	else:
-		bot.sendChatAction(chat_id, "typing")
-		msg.reply_text('Balas pesan untuk mencari tahu info animenya')
-
-def AI(bot, update):
-	message = update.effective_message
-	try:
-		if message.reply_to_message.from_user.username == "EmiliaHikariBot":
-			if message.chat.id == -1001161604147:
-				try:
-					teksnya = message.text
-					try:
-						SimsimiKey = os.environ.get('SimsimiKey', None)
-						URL = "http://sandbox.api.simsimi.com/request.p?key={}&lc=id&ft=1.0&text={}".format(SimsimiKey, teksnya)
-						r = requests.get(url = URL)
-						data = r.json()
-						if data['result'] == 509:
-							update.effective_message.reply_text("Kuota token simsimi telah habis!")
-							return
-						respon = data['response']
-						if "simsimi" in respon:
-							respon = respon.replace("simsimi", "Emil")
-						if "simi simi" in respon:
-							respon = respon.replace("simi simi", "Emil")
-						if "simi" in respon:
-							respon = respon.replace("simi", "Emil")
-						if "sim simi" in respon:
-							respon = respon.replace("sim simi", "Emil")
-						if "anak ayam" in respon:
-							respon = respon.replace("anak ayam", "")
-						update.effective_message.reply_text(respon)
-					except:
-						return
-				except:
-					return
-	except:
-		return
-
-def setToken(bot, update):
-	message = update.effective_message
-	args = update.effective_message.text.split(None, 1)
-	target = args[1]
-	try:
-		os.environ["SimsimiKey"] = target
-		bot.sendMessage(update.effective_chat.id, text="Set token berhasil!\nToken sekarang adalah: `{}`".format(target), parse_mode='markdown', reply_to_message_id=message.message_id)
-	except:
-		update.effective_message.reply_text("Token gagal diisi!\nMungkin ada kesalahan kata pada token")
-
-def cekToken(bot, update):
-	message = update.effective_message
-	try:
-		SimsimiKey = os.environ.get('SimsimiKey', None)
-		if SimsimiKey == None:
-			update.effective_message.reply_text("Tidak ada token yang di setel")
-			return
-		URL = "http://sandbox.api.simsimi.com/request.p?key={}&lc=id&ft=1.0&text={}".format(SimsimiKey, "test")
-		r = requests.get(url = URL)
-		data = r.json()
-		bot.sendMessage(update.effective_chat.id, text="Token saat ini: `{}`\nStatus token: `{}`".format(SimsimiKey, data['msg']), parse_mode='markdown', reply_to_message_id=message.message_id)
-	except:
-		update.effective_message.reply_text("Token gagal dicek!")
-
 @run_async
 def log(bot: Bot, update: Update):
 	message = update.effective_message
@@ -475,7 +291,6 @@ __help__ = """
  - /tr <target> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
  - /wiki <teks>: mencari teks yang ditulis dari sumber wikipedia
  - /kbbi <teks>: mencari teks yang ditulis dari kamus besar bahasa indonesia
- - /anime: balas pesan gambar anime untuk mencari tahu animenya
 
  Note : teks untuk di terjemah tidak bisa dicampur emoticon
 """
@@ -494,11 +309,7 @@ RAMALAN_HANDLER = DisableAbleCommandHandler("ramalan", ramalan)
 TERJEMAH_HANDLER = DisableAbleCommandHandler("tr", terjemah)
 WIKIPEDIA_HANDLER = DisableAbleCommandHandler("wiki", wiki)
 KBBI_HANDLER = DisableAbleCommandHandler("kbbi", kamusbesarbahasaindonesia)
-ANIME_HANDLER = DisableAbleCommandHandler("anime", anime)
 LOG_HANDLER = CommandHandler("log", log, filters=CustomFilters.sudo_filter)
-ai_handler = MessageHandler(Filters.text, AI)
-SetToken_HANDLER = CommandHandler("settoken", setToken, filters=CustomFilters.sudo_filter)
-CetToken_HANDLER = CommandHandler("cekToken", cekToken, filters=CustomFilters.sudo_filter)
 
 dispatcher.add_handler(PING_HANDLER)
 dispatcher.add_handler(STICKERID_HANDLER)
@@ -512,8 +323,4 @@ dispatcher.add_handler(RAMALAN_HANDLER)
 dispatcher.add_handler(TERJEMAH_HANDLER)
 dispatcher.add_handler(WIKIPEDIA_HANDLER)
 dispatcher.add_handler(KBBI_HANDLER)
-dispatcher.add_handler(ANIME_HANDLER)
 dispatcher.add_handler(LOG_HANDLER)
-dispatcher.add_handler(ai_handler)
-dispatcher.add_handler(SetToken_HANDLER)
-dispatcher.add_handler(CetToken_HANDLER)
