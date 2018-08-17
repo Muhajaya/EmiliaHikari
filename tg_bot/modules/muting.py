@@ -72,23 +72,29 @@ def unmute(bot: Bot, update: Update, args: List[str]) -> str:
 
     member = chat.get_member(int(user_id))
 
-    if member.status != 'kicked' and member.status != 'left':
-        if member.can_send_messages and member.can_send_media_messages \
-                and member.can_send_other_messages and member.can_add_web_page_previews:
-            message.reply_text("Pengguna ini sudah memiliki hak untuk berbicara.")
-        else:
-            bot.restrict_chat_member(chat.id, int(user_id),
-                                     can_send_messages=True,
-                                     can_send_media_messages=True,
-                                     can_send_other_messages=True,
-                                     can_add_web_page_previews=True)
-            message.reply_text("Disuarakan!")
-            return "<b>{}:</b>" \
-                   "\n#UNMUTE" \
-                   "\n<b>Admin:</b> {}" \
-                   "\n<b>Pengguna:</b> {}".format(html.escape(chat.title),
-                                              mention_html(user.id, user.first_name),
-                                              mention_html(member.user.id, member.user.first_name))
+    if member:
+        if is_user_admin(chat, user_id, member=member):
+            message.reply_text("Ini adalah admin, apa yang Anda harapkan kepada saya?")
+            return ""
+
+        elif member.status != 'kicked' and member.status != 'left':
+            if member.can_send_messages and member.can_send_media_messages \
+                    and member.can_send_other_messages and member.can_add_web_page_previews:
+                message.reply_text("Pengguna ini sudah memiliki hak untuk berbicara.")
+                return ""
+            else:
+                bot.restrict_chat_member(chat.id, int(user_id),
+                                         can_send_messages=True,
+                                         can_send_media_messages=True,
+                                         can_send_other_messages=True,
+                                         can_add_web_page_previews=True)
+                message.reply_text("Disuarakan!")
+                return "<b>{}:</b>" \
+                       "\n#UNMUTE" \
+                       "\n<b>Admin:</b> {}" \
+                       "\n<b>Pengguna:</b> {}".format(html.escape(chat.title),
+                                                  mention_html(user.id, user.first_name),
+                                                  mention_html(member.user.id, member.user.first_name))
     else:
         message.reply_text("Pengguna ini bahkan tidak dalam obrolan, menyuarakannya tidak akan membuat mereka berbicara lebih dari "
                            "yang sudah mereka lakukan!")
