@@ -225,13 +225,7 @@ def terjemah(bot: Bot, update: Update):
 			trl = Translator()
 			deteksibahasa = trl.detect(teks)
 			tekstr = trl.translate(teks, dest=target)
-			bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
-			mentahan = "{}".format(tekstr)
-			teks1,teks2 = mentahan.split("text=")
-			teks1a = "{}".format(teks2)
-			teks1b,teks2b = teks1a.split(", pronunciation")
-			print(msg.reply_to_message.text)
-			message.reply_text("{}".format(teks1b))
+			message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
 		else:
 			args = update.effective_message.text.split(None, 2)
 			target = args[1]
@@ -240,12 +234,7 @@ def terjemah(bot: Bot, update: Update):
 			trl = Translator()
 			deteksibahasa = trl.detect(teks)
 			tekstr = trl.translate(teks, dest=target)
-			bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
-			mentahan = "{}".format(tekstr)
-			teks1,teks2 = mentahan.split("text=")
-			teks1a = "{}".format(teks2)
-			teks1b,teks2b = teks1a.split(", pronunciation")
-			message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, teks1b), parse_mode=ParseMode.MARKDOWN)
+			message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
 
 	except IndexError:
 		update.effective_message.reply_text("Balas pesan atau tulis pesan dari bahasa lain untuk "
