@@ -64,7 +64,8 @@ def reply_afk(bot: Bot, update: Update):
                     if not reason:
                         res = "{} sedang AFK!".format(fst_name)
                     else:
-                        res = "{} sedang AFK!\nKarena : {}".format(fst_name, user.reason)
+                        res = "{} sedang AFK!\nKarena : {}".format(fst_name, reason)
+                    message.reply_text(res)
             
     #        check_afk(bot, update, user_id, fst_name)
 
