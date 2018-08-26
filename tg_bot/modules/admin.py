@@ -196,7 +196,10 @@ def adminlist(bot: Bot, update: Update):
     for admin in administrators:
         user = admin.user
         status = admin.status
-        name = "[{}](tg://user?id={})".format(user.first_name + " " + (user.last_name or ""), user.id)
+        if user.first_name == '':
+            name = "[☠ Akun Terhapus](tg://user?id={})".format(user.id)
+        else:
+            name = "[{}](tg://user?id={})".format(user.first_name + " " + (user.last_name or ""), user.id)
         #if user.username:
         #    name = escape_markdown("@" + user.username)
         if status == "creator":
@@ -205,7 +208,10 @@ def adminlist(bot: Bot, update: Update):
     for admin in administrators:
         user = admin.user
         status = admin.status
-        name = "[{}](tg://user?id={})".format(user.first_name + " " + (user.last_name or ""), user.id)
+        if user.first_name == '':
+            name = "[☠️ Akun Terhapus](tg://user?id={})".format(user.id)
+        else:
+            name = "[{}](tg://user?id={})".format(user.first_name + " " + (user.last_name or ""), user.id)
         #if user.username:
         #    name = escape_markdown("@" + user.username)
         if status == "administrator":
