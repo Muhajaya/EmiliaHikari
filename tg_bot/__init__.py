@@ -57,8 +57,14 @@ if ENV:
     WORKERS = int(os.environ.get('WORKERS', 8))
     BAN_STICKER = os.environ.get('BAN_STICKER', 'CAADBAAD4kYAAuOnXQW5LUN400QOBQI')
     ALLOW_EXCL = os.environ.get('ALLOW_EXCL', False)
-    API_WEATHER = os.environ.get('API_OPENWEATHER', None)
-    API_ANIME = os.environ.get('API_WHATANIME', None)
+    try:
+        API_WEATHER = os.environ.get('API_OPENWEATHER', None)
+    except:
+        API_WEATHER = None
+    try:
+        API_ANIME = os.environ.get('API_WHATANIME', None)
+    except:
+        API_ANIME = None
 
 else:
     from tg_bot.config import Development as Config
@@ -100,8 +106,14 @@ else:
     WORKERS = Config.WORKERS
     BAN_STICKER = Config.BAN_STICKER
     ALLOW_EXCL = Config.ALLOW_EXCL
-    API_WEATHER = Config.API_OPENWEATHER
-    API_ANIME = Config.API_WHATANIME
+    try:
+        API_WEATHER = Config.API_OPENWEATHER
+    except:
+        API_WEATHER = None
+    try:
+        API_ANIME = Config.API_WHATANIME
+    except:
+        API_ANIME = None
 
 
 SUDO_USERS.add(OWNER_ID)
