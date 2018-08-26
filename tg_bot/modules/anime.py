@@ -62,7 +62,7 @@ def anime(bot: Bot, update: Update):
 		img = foto.read()
 		b64 = base64.b64encode(img)
 
-		script = 'curl -X POST https://whatanime.ga/api/search?token=b4c29ee1c0cfa71f54d85ccd71a5db3a5757f8db -d "image=data:image/jpeg;base64,$(base64 -w 0 anime.jpg)" > hasil.txt'
+		script = 'curl -X POST https://whatanime.ga/api/search?token={} -d "image=data:image/jpeg;base64,$(base64 -w 0 anime.jpg)" > hasil.txt'.format(API_ANIME)
 		bot.sendChatAction(update.effective_chat.id, "record_video")
 		test = os.system(script)
 		with open("hasil.txt", "r") as f:
@@ -90,10 +90,12 @@ def anime(bot: Bot, update: Update):
 					hasilnya += "\nSinonim: `{sinonimnya}`".format(sinonimnya=animenya['synonyms'][0])
 				except:
 					hasilnya += "\nSinonim: `{sinonimnya}`".format(sinonimnya="Tidak ada")
+				"""
 				if animenya['is_adult'] == 'true':
 					hasilnya += "\nKonten dewasa: `Ya`"
 				else:
 					hasilnya += "\nKonten dewasa: `Tidak`"
+				"""
 				NamaEncoded = urllib.parse.quote(animenya['filename'], safe='')
 				LinkURL = "https://whatanime.ga/preview.php?anilist_id={anilist_id}&file={NamaEncoded}&t={at}&token={tokenthumb}".format(anilist_id=animenya['anilist_id'], NamaEncoded=NamaEncoded, at=animenya['at'], tokenthumb=animenya['tokenthumb'])
 				f = open('anime-preview.mp4','wb')
