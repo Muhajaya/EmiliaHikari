@@ -138,7 +138,10 @@ def save(bot: Bot, update: Update):
     if data_type is None:
         msg.reply_text("Tidak ada catatan!")
         return
-
+    
+    if len(text.strip()) == 0:
+        text = note_name
+        
     sql.add_note_to_db(chat_id, note_name, text, data_type, buttons=buttons, file=content)
     msg.reply_text("Ya! {note_name} ditambahkan. dapatkan dengan /get {note_name} atau #{note_name}".format(note_name=note_name))
 
