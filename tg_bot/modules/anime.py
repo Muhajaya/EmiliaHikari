@@ -62,7 +62,7 @@ def anime(bot: Bot, update: Update):
 		img = foto.read()
 		b64 = base64.b64encode(img)
 
-		script = 'curl -X POST https://whatanime.ga/api/search?token={} -d "image=data:image/jpeg;base64,$(base64 -w 0 anime.jpg)" > hasil.txt'.format(API_ANIME)
+		script = 'curl -s -X POST https://whatanime.ga/api/search?token={} -d "image=data:image/jpeg;base64,$(base64 -w 0 anime.jpg)" > hasil.txt'.format(API_ANIME)
 		bot.sendChatAction(update.effective_chat.id, "record_video")
 		test = os.system(script)
 		with open("hasil.txt", "r") as f:
