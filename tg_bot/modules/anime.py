@@ -7,6 +7,8 @@ import urllib
 from PIL import Image
 
 import requests
+from Pymoe import Anilist
+from googletrans import Translator
 from telegram.error import BadRequest, Unauthorized
 from telegram import Message, Chat, Update, Bot, MessageEntity
 from telegram import ParseMode
@@ -140,15 +142,68 @@ def anime(bot: Bot, update: Update):
 		bot.sendChatAction(chat_id, "typing")
 		msg.reply_text('Balas pesan untuk mencari tahu info animenya')
 
+
+@run_async
+def anilist(bot: Bot, update: Update):
+	msg = update.effective_message
+	chat_id = update.effective_chat.id
+	instance = Anilist()
+	try:
+		args = update.effective_message.text.split(None, 1)
+		teks = args[1]
+	except:
+		update.effective_message.reply_text("Tulis nama animenya untuk mencari info animenya")
+		return
+	bot.sendChatAction(chat_id, "typing")
+	anime = instance.search.anime(teks)
+	if anime['data']['Page']['pageInfo']['total'] == 0:
+		update.effective_message.reply_text("Hasil tidak ditemukan!")
+		return
+	else:
+		pass
+	animeid = anime['data']['Page']['media'][0]['id']
+	anilist = instance.get.anime(animeid)
+	trl = Translator()
+	if anilist['data']['Media']['title']['english'] == None:
+		hasil = "Judul: `{}`\n".format(anilist['data']['Media']['title']['romaji'])
+	else:
+		judul = trl.translate(anilist['data']['Media']['title']['english'], dest="id")
+		hasil = "Judul: `{}` / `{}` / `{}`\n".format(anilist['data']['Media']['title']['romaji'], anilist['data']['Media']['title']['english'], judul.text)
+	hasil += "Tanggal mulai: `{}/{}/{}`\n".format(anilist['data']['Media']['startDate']['day'], anilist['data']['Media']['startDate']['month'], anilist['data']['Media']['startDate']['year'])
+	if anilist['data']['Media']['endDate']['day'] == None:
+		pass
+	else:
+		hasil += "Tanggal selesai: `{}/{}/{}`\n".format(anilist['data']['Media']['endDate']['day'], anilist['data']['Media']['endDate']['month'], anilist['data']['Media']['endDate']['year'])
+	hasil += "Kategori: `{}`\n".format(anilist['data']['Media']['format'])
+	hasil += "Status: `{}`\n".format(anilist['data']['Media']['status'])
+	hasil += "Total episode: `{}`\n".format(anilist['data']['Media']['episodes'])
+	musim = trl.translate(anilist['data']['Media']['season'], dest="id")
+	hasil += "Musim: `{}`\n".format(musim.text.capitalize())
+	deskripsi = anilist['data']['Media']['description'].replace("<br>", "")
+	desc = trl.translate(deskripsi, dest="id")
+	hasil += "Deskripsi: `{}`\n".format(desc.text)
+	hasil += "Genre: `{}`\n".format(", ".join(anilist['data']['Media']['genres']))
+	hasil += "Skor rata-rata: `{}%`\n".format(anilist['data']['Media']['averageScore'])
+	hasil += "Skor berarti: `{}%`\n".format(anilist['data']['Media']['meanScore'])
+	try:
+		bot.sendPhoto(chat_id, anilist['data']['Media']['coverImage']['large'], reply_to_message_id=msg.message_id)
+	except:
+		pass
+	msg.reply_text(hasil, parse_mode="markdown")
+
+
 __help__ = """
  - /anime: balas pesan gambar/stiker anime untuk mencari tahu animenya
+ - /anilist: *BETA*, mencari info anime dari web AniList
 
  Note : hasil tidak 100% benar, biasanya dari gambar screenshot anime bisa diatas 90% benar, \
  dan selain itu dibawah 90% benar
 """
 
-__mod_name__ = "🔍 What Anime"
+__mod_name__ = "🔍 Cari Anime"
 
 ANIME_HANDLER = DisableAbleCommandHandler("anime", anime)
+ANILIST_HANDLER = DisableAbleCommandHandler("anilist", anilist)
 
 dispatcher.add_handler(ANIME_HANDLER)
+dispatcher.add_handler(ANILIST_HANDLER)
