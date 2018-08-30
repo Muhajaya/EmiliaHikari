@@ -181,7 +181,7 @@ def anilist(bot: Bot, update: Update):
 	hasil += "Musim: `{}`\n".format(musim.text.capitalize())
 	deskripsi = anilist['data']['Media']['description'].replace("<br>", "")
 	desc = trl.translate(deskripsi, dest="id")
-	hasil += "Deskripsi: `{}`\n".format(desc.text)
+	hasil += "Deskripsi: `{}...` [Baca lebih lanjut]({})\n".format(desc.text[:100], "https://anilist.co/anime/" + str(animeid))
 	hasil += "Genre: `{}`\n".format(", ".join(anilist['data']['Media']['genres']))
 	hasil += "Skor rata-rata: `{}%`\n".format(anilist['data']['Media']['averageScore'])
 	hasil += "Skor berarti: `{}%`\n".format(anilist['data']['Media']['meanScore'])
@@ -192,9 +192,32 @@ def anilist(bot: Bot, update: Update):
 	msg.reply_text(hasil, parse_mode="markdown")
 
 
+@run_async
+def anichar(bot: Bot, update: Update):
+	msg = update.effective_message
+	chat_id = update.effective_chat.id
+	instance = Anilist()
+	try:
+		args = update.effective_message.text.split(None, 1)
+		teks = args[1]
+	except:
+		update.effective_message.reply_text("Tulis nama karakternya untuk mencari info karakter anime")
+		return
+	karakter = instance.search.character(teks)
+	if karakter['data']['Page']['pageInfo']['total'] == 0:
+		update.effective_message.reply_text("Hasil tidak ditemukan!")
+		return
+	else:
+		pass
+	hasil = "Nama depan: {}\n".format(karakter['data']['Page']['characters'][0]['name']['first'])
+	hasil += "Nama belakang: {}\n".format(karakter['data']['Page']['characters'][0]['name']['last'])
+	bot.sendPhoto(chat_id, karakter['data']['Page']['characters'][0]['image']['large'], caption=hasil, reply_to_message_id=msg.message_id)
+
+
 __help__ = """
  - /anime: balas pesan gambar/stiker anime untuk mencari tahu animenya
- - /anilist: *BETA*, mencari info anime dari web AniList
+ - /anilist <nama anime>: *BETA*, mencari info anime dari web AniList
+ - /anichar <nama karakter>: Mencari info tentang karakter dari anime
 
  Note : hasil tidak 100% benar, biasanya dari gambar screenshot anime bisa diatas 90% benar, \
  dan selain itu dibawah 90% benar
@@ -204,6 +227,8 @@ __mod_name__ = "🔍 Cari Anime"
 
 ANIME_HANDLER = DisableAbleCommandHandler("anime", anime)
 ANILIST_HANDLER = DisableAbleCommandHandler("anilist", anilist)
+#ANICHAR_HANDLER = DisableAbleCommandHandler("anichar", anichar)
 
 dispatcher.add_handler(ANIME_HANDLER)
 dispatcher.add_handler(ANILIST_HANDLER)
+#dispatcher.add_handler(ANICHAR_HANDLER)
