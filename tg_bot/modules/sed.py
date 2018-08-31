@@ -87,7 +87,7 @@ def sed(bot: Bot, update: Update):
         except sre_constants.error:
             LOGGER.warning(update.effective_message.text)
             LOGGER.exception("SRE constant error")
-            update.effective_message.reply_text("Apakah Anda bahkan sed? Sepertinya tidak.")
+            update.effective_message.reply_text("Apakah itu sed? Sepertinya tidak.")
             return
 
         # empty string errors -_-
