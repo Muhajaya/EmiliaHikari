@@ -177,8 +177,18 @@ def anilist(bot: Bot, update: Update):
 	hasil += "Kategori: `{}`\n".format(anilist['data']['Media']['format'])
 	hasil += "Status: `{}`\n".format(anilist['data']['Media']['status'])
 	hasil += "Total episode: `{}`\n".format(anilist['data']['Media']['episodes'])
-	musim = trl.translate(anilist['data']['Media']['season'], dest="id")
-	hasil += "Musim: `{}`\n".format(musim.text.capitalize())
+	season = anilist['data']['Media']['season']
+	if season.lower() == "winter":
+		musim = "Musim dingin"
+	elif season.lower() == "fall":
+		musim = "Musim gugur"
+	elif season.lower() == "spring":
+		musim = "Musim semi"
+	elif season.lower() == "summer":
+		musim = "Musim panas"
+	else:
+		musim = "Tidak diketahui"
+	hasil += "Musim: `{}`\n".format(musim)
 	deskripsi = anilist['data']['Media']['description'].replace("<br>", "")
 	desc = trl.translate(deskripsi, dest="id")
 	if update.effective_chat.type == "private":
