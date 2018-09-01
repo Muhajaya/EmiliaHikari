@@ -181,7 +181,10 @@ def anilist(bot: Bot, update: Update):
 	hasil += "Musim: `{}`\n".format(musim.text.capitalize())
 	deskripsi = anilist['data']['Media']['description'].replace("<br>", "")
 	desc = trl.translate(deskripsi, dest="id")
-	hasil += "Deskripsi: `{}...` [Baca lebih lanjut]({})\n".format(desc.text[:100], "https://anilist.co/anime/" + str(animeid))
+	if update.effective_chat.type == "private":
+		hasil += "Deskripsi: `{}`\n".format(desc.text)
+	else:
+		hasil += "Deskripsi: `{}...` [Baca lebih lanjut]({})\n".format(desc.text[:100], "https://anilist.co/anime/" + str(animeid))
 	hasil += "Genre: `{}`\n".format(", ".join(anilist['data']['Media']['genres']))
 	hasil += "Skor rata-rata: `{}%`\n".format(anilist['data']['Media']['averageScore'])
 	hasil += "Skor berarti: `{}%`\n".format(anilist['data']['Media']['meanScore'])
