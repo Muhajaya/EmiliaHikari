@@ -6,6 +6,9 @@ import datetime
 import urllib
 from PIL import Image
 
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+
 import requests
 from Pymoe import Anilist
 from googletrans import Translator
@@ -191,10 +194,13 @@ def anilist(bot: Bot, update: Update):
 	hasil += "Musim: `{}`\n".format(musim)
 	deskripsi = anilist['data']['Media']['description'].replace("<br>", "")
 	desc = trl.translate(deskripsi, dest="id")
+	"""
 	if update.effective_chat.type == "private":
 		hasil += "Deskripsi: `{}`\n".format(desc.text)
 	else:
 		hasil += "Deskripsi: `{}...` [Baca lebih lanjut]({})\n".format(desc.text[:100], "https://anilist.co/anime/" + str(animeid))
+	"""
+	hasil += "Deskripsi: `{}`\n".format(desc.text)
 	hasil += "Genre: `{}`\n".format(", ".join(anilist['data']['Media']['genres']))
 	hasil += "Skor rata-rata: `{}%`\n".format(anilist['data']['Media']['averageScore'])
 	hasil += "Skor berarti: `{}%`\n".format(anilist['data']['Media']['meanScore'])
@@ -220,17 +226,95 @@ def anichar(bot: Bot, update: Update):
 	if karakter['data']['Page']['pageInfo']['total'] == 0:
 		update.effective_message.reply_text("Hasil tidak ditemukan!")
 		return
-	else:
-		pass
-	hasil = "Nama depan: {}\n".format(karakter['data']['Page']['characters'][0]['name']['first'])
-	hasil += "Nama belakang: {}\n".format(karakter['data']['Page']['characters'][0]['name']['last'])
-	bot.sendPhoto(chat_id, karakter['data']['Page']['characters'][0]['image']['large'], caption=hasil, reply_to_message_id=msg.message_id)
+	print(karakter['data']['Page']['characters'][0]['id'])
+	page = urlopen('https://myanimelist.net/character/{}/'.format(karakter['data']['Page']['characters'][0]['id']))
+	soup = BeautifulSoup(page, "html.parser")
+
+	try:
+		Gambar = soup.body.find_all('img')[1].get('src')
+		NamaKarakter = soup.body.find('div', attrs={'class' : 'normal_header', 'style': 'height: 15px;'}).text
+	except:
+		msg.reply_text("Gagal mengambil data, laporkan masalah ini ke pembuat saya\nID: {}".format(karakter['data']['Page']['characters'][0]['id']), parse_mode="markdown")
+	# Nama
+	try:
+		Karakter = soup.body.find('td', attrs={'valign' : 'top', 'style': 'padding-left: 5px;'}).text
+	except:
+		msg.reply_text("Nama: `{}`".format(NamaKarakter), parse_mode="markdown")
+	"""
+	# Ultah
+	try:
+		Ultah = Karakter.split("Birthday: ")[1].split("\r")[0]
+	except:
+		Ultah = "tidak diketahui"
+	# Goldar
+	try:
+		Goldar = Karakter.split("Blood type: ")[1].split("\r")[0].replace("\n", "")
+	except:
+		Goldar = "tidak diketahui"
+	# Tinggi badan
+	try:
+		Tinggi = Karakter.split("Height: ")[1].split("\r")[0].replace("\n", "")
+	except:
+		Tinggi = "tidak diketahui"
+	# Berat badan
+	try:
+		Berat = Karakter.split("Weight: ")[1].split("\r")[0].replace("\n", "")
+	except:
+		Berat = "tidak diketahui"
+	# Favorite Makanan
+	try:
+		FavMakanan = Karakter.split("Favorite food: ")[1].split("\r")[0].replace("\n", "")
+	except:
+		FavMakanan = "tidak diketahui"
+	# Tentang
+	try:
+		Tentang = Karakter.split('\n\r')[1].split("\r")[0].split("\n\n")[0]
+		trl = Translator()
+		terjemah = trl.translate(Tentang, dest="id")
+		Tentang = terjemah.text
+	except:
+		Tentang = "tidak diketahui"
+	# Sumber
+	"""
+	try:
+		Bawah = Karakter.split('\n\r')[1].split("\r")[1]
+		Sumber = Bawah.split("Source ")[0].split("Voice")[0].replace("\n(", "").replace("Source: ", "").replace(")", "")
+	except:
+		Sumber = "tidak diketahui"
+	#Voice = Bawah.split("Voice Actors")[1].split("See More")[0].replace("\n", "")
+	"""
+	"""
+
+	"""
+	hasil = "Nama: `{}`\n".format(NamaKarakter)
+	if Ultah != "tidak diketahui":
+		hasil += "Ulang tahun: `{}`\n".format(Ultah)
+	if Goldar != "tidak diketahui":
+		hasil += "Golongan darah: `{}`\n".format(Goldar)
+	if Tinggi != "tidak diketahui":
+		hasil += "Tinggi: `{}`\n".format(Tinggi)
+	if Berat != "tidak diketahui":
+		hasil += "Berat badan: `{}`\n".format(Berat)
+	if FavMakanan != "tidak diketahui":
+		hasil += "Favorit makanan: `{}`\n".format(FavMakanan)
+	if Tentang != "tidak diketahui":
+		hasil += "Tentang: `{}`\n\n".format(Tentang)
+	"""
+	Info = Karakter.split(NamaKarakter)[1].split("\r")[0]
+	hasil = "Nama: `{}`\n".format(NamaKarakter)
+	hasil += "{}\n".format(Info)
+	#if Sumber != "tidak diketahui":
+	#	hasil += "Sumber: `{}`\n".format(Sumber)
+	#hasil = "Nama depan: {}\n".format(karakter['data']['Page']['characters'][0]['name']['first'])
+	#hasil += "Nama belakang: {}\n".format(karakter['data']['Page']['characters'][0]['name']['last'])
+	bot.sendPhoto(chat_id, Gambar, reply_to_message_id=msg.message_id)
+	msg.reply_text(hasil, parse_mode="markdown")
 
 
 __help__ = """
  - /anime: balas pesan gambar/stiker anime untuk mencari tahu animenya
  - /anilist <nama anime>: *BETA*, mencari info anime dari web AniList
- - /anichar <nama karakter>: Mencari info tentang karakter dari anime
+ - /anichar <nama karakter>: *BETA*, Mencari info tentang karakter dari anime
 
  Note : hasil tidak 100% benar, biasanya dari gambar screenshot anime bisa diatas 90% benar, \
  dan selain itu dibawah 90% benar

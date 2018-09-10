@@ -201,7 +201,6 @@ def leavechat(bot: Bot, update: Update, args: List[int]):
 @run_async
 def ping(bot: Bot, update: Update):
 	start_time = time.time()
-	bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
 	end_time = time.time()
 	ping_time = float(end_time - start_time)
 	update.effective_message.reply_text("Pong! \n"
@@ -209,7 +208,6 @@ def ping(bot: Bot, update: Update):
 
 @run_async
 def ramalan(bot: Bot, update: Update):
-	bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
 	update.effective_message.reply_text(random.choice(RAMALAN_STRINGS))    
 
 @run_async
@@ -253,7 +251,6 @@ def wiki(bot: Bot, update: Update):
 		args = update.effective_message.text.split(None, 1)
 		teks = args[1]
 		message = update.effective_message
-		bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
 		wikipedia.set_lang("id")
 		pagewiki = wikipedia.page(teks)
 		judul = pagewiki.title
@@ -278,7 +275,6 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 		args = update.effective_message.text.split(None, 1)
 		teks = args[1]
 		message = update.effective_message
-		bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
 		kamusid = KBBI(teks)
 		message.reply_text("Hasil dari <b>{}</b> adalah:\n{}".format(teks, kamusid), parse_mode=ParseMode.HTML)
 
