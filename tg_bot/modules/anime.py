@@ -205,10 +205,25 @@ def anilist(bot: Bot, update: Update):
 	hasil += "Skor rata-rata: `{}%`\n".format(anilist['data']['Media']['averageScore'])
 	hasil += "Skor berarti: `{}%`\n".format(anilist['data']['Media']['meanScore'])
 	try:
-		bot.sendPhoto(chat_id, anilist['data']['Media']['coverImage']['large'], reply_to_message_id=msg.message_id)
+		hasil += "[Cover gambar]({})".format(anilist['data']['Media']['coverImage']['large'])
 	except:
 		pass
-	msg.reply_text(hasil, parse_mode="markdown")
+	#try:
+	#	bot.sendPhoto(chat_id, anilist['data']['Media']['coverImage']['large'], reply_to_message_id=msg.message_id)
+	#except:
+	#	pass
+	buttoninline = """{
+					  "inline_keyboard": [
+						[
+						  {
+							"text": "Cek di AniList",
+							"url": "https://anilist.co/anime/""" + str(animeid) + """"
+						  }
+						]
+					  ]
+					}"""
+	#print(animeid)
+	msg.reply_text(hasil, parse_mode="markdown", reply_markup=buttoninline)
 
 
 @run_async
@@ -303,11 +318,12 @@ def anichar(bot: Bot, update: Update):
 	Info = Karakter.split(NamaKarakter)[1].split("\r")[0]
 	hasil = "Nama: `{}`\n".format(NamaKarakter)
 	hasil += "{}\n".format(Info)
+	hasil += "[Gambar Cover]({})".format(Gambar)
 	#if Sumber != "tidak diketahui":
 	#	hasil += "Sumber: `{}`\n".format(Sumber)
 	#hasil = "Nama depan: {}\n".format(karakter['data']['Page']['characters'][0]['name']['first'])
 	#hasil += "Nama belakang: {}\n".format(karakter['data']['Page']['characters'][0]['name']['last'])
-	bot.sendPhoto(chat_id, Gambar, reply_to_message_id=msg.message_id)
+	#bot.sendPhoto(chat_id, Gambar, reply_to_message_id=msg.message_id)
 	msg.reply_text(hasil, parse_mode="markdown")
 
 
