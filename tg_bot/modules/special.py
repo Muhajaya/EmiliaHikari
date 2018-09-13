@@ -201,10 +201,11 @@ def leavechat(bot: Bot, update: Update, args: List[int]):
 @run_async
 def ping(bot: Bot, update: Update):
 	start_time = time.time()
+	test = update.effective_message.reply_text("Pong!")
 	end_time = time.time()
 	ping_time = float(end_time - start_time)
-	update.effective_message.reply_text("Pong! \n"
-											"Kecepatannya : {0:.2f} detik".format(round(ping_time, 2) % 60))
+	bot.editMessageText(chat_id=update.effective_chat.id, message_id=test.message_id,
+						text="Pong!\nKecepatannya : {0:.2f} detik".format(round(ping_time, 2) % 60))
 
 @run_async
 def ramalan(bot: Bot, update: Update):
