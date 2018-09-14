@@ -72,16 +72,31 @@ def report(bot: Bot, update: Update) -> str:
                                                                       mention_html(user.id,
                                                                                    user.first_name),
                                                                       user.id)
-            link = "\n<b>Link:</b> " \
-                   "<a href=\"http://telegram.me/{}/{}\">klik disini</a>".format(chat.username, message.message_id)
+            #link = "\n<b>Link:</b> " \
+            #       "<a href=\"http://telegram.me/{}/{}\">klik disini</a>".format(chat.username, message.message_id)
+
+            buttoninline = """{
+                      "inline_keyboard": [
+                      [
+                        {
+                        "text": "⚠️ Pesan yang dilaporkan",
+                        "url": "https://t.me/""" + chat.username + "/" + str(message.message_id) + """"
+                        }
+                      ]
+                      ]
+                    }"""
 
             should_forward = False
+            bot.send_message(chat.id, "<i>⚠️ Pesan telah di laporkan ke semua admin!</i>", parse_mode=ParseMode.HTML, reply_to_message_id=message.message_id)
 
         else:
             msg = "{} memanggil admin di \"{}\"!".format(mention_html(user.id, user.first_name),
                                                                html.escape(chat_name))
-            link = ""
+            #link = ""
+            buttoninline = ""
+
             should_forward = True
+            bot.send_message(chat.id, "<i>⚠️ Pesan telah di laporkan ke semua admin!</i>", parse_mode=ParseMode.HTML, reply_to_message_id=message.message_id)
 
         for admin in admin_list:
             if admin.user.is_bot:  # can't message bots
@@ -89,7 +104,8 @@ def report(bot: Bot, update: Update) -> str:
 
             if sql.user_should_report(admin.user.id):
                 try:
-                    bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
+                    #bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
+                    bot.send_message(admin.user.id, msg, parse_mode=ParseMode.HTML, reply_markup=buttoninline)
 
                     if should_forward:
                         message.reply_to_message.forward(admin.user.id)
