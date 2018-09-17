@@ -80,7 +80,7 @@ def report(bot: Bot, update: Update) -> str:
                       [
                         {
                         "text": "⚠️ Pesan yang dilaporkan",
-                        "url": "https://t.me/""" + chat.username + "/" + str(message.message_id) + """"
+                        "url": "https://t.me/""" + chat.username + "/" + str(message.reply_to_message.message_id) + """"
                         }
                       ]
                       ]
