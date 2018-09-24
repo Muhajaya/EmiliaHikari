@@ -2,6 +2,7 @@ import html
 from typing import Optional, List
 
 from telegram import Message, Chat, Update, Bot, User, ParseMode
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, RegexHandler, run_async, Filters
 from telegram.utils.helpers import mention_html
@@ -75,16 +76,10 @@ def report(bot: Bot, update: Update) -> str:
             #link = "\n<b>Link:</b> " \
             #       "<a href=\"http://telegram.me/{}/{}\">klik disini</a>".format(chat.username, message.message_id)
 
-            buttoninline = """{
-                      "inline_keyboard": [
-                      [
-                        {
-                        "text": "⚠️ Pesan yang dilaporkan",
-                        "url": "https://t.me/""" + chat.username + "/" + str(message.reply_to_message.message_id) + """"
-                        }
-                      ]
-                      ]
-                    }"""
+            keyboard = [
+              [InlineKeyboardButton(u"⚠️ Pesan yang dilaporkan", url="https://t.me/{}/{}".format(chat.username, str(message.reply_to_message.message_id)))]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
 
             should_forward = False
             bot.send_message(chat.id, "<i>⚠️ Pesan telah di laporkan ke semua admin!</i>", parse_mode=ParseMode.HTML, reply_to_message_id=message.message_id)
@@ -93,7 +88,7 @@ def report(bot: Bot, update: Update) -> str:
             msg = "{} memanggil admin di \"{}\"!".format(mention_html(user.id, user.first_name),
                                                                html.escape(chat_name))
             #link = ""
-            buttoninline = ""
+            reply_markup = ""
 
             should_forward = True
             bot.send_message(chat.id, "<i>⚠️ Pesan telah di laporkan ke semua admin!</i>", parse_mode=ParseMode.HTML, reply_to_message_id=message.message_id)
@@ -105,7 +100,7 @@ def report(bot: Bot, update: Update) -> str:
             if sql.user_should_report(admin.user.id):
                 try:
                     #bot.send_message(admin.user.id, msg + link, parse_mode=ParseMode.HTML)
-                    bot.send_message(admin.user.id, msg, parse_mode=ParseMode.HTML, reply_markup=buttoninline)
+                    bot.send_message(admin.user.id, msg, parse_mode=ParseMode.HTML, reply_markup=reply_markup)
 
                     if should_forward:
                         message.reply_to_message.forward(admin.user.id)
