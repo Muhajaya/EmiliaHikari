@@ -79,10 +79,10 @@ def report(bot: Bot, update: Update) -> str:
 
             keyboard = [
               [InlineKeyboardButton(u"⚠️ Pesan yang dilaporkan", url="https://t.me/{}/{}".format(chat.username, str(message.reply_to_message.message_id)))],
-              [InlineKeyboardButton(u"⚠️ Tendang", callback_data="{}=kick={}={}".format(chat.id, reported_user.id, reported_user.first_name)),
-              InlineKeyboardButton(u"⛔️ Banned", callback_data="{}=banned={}={}".format(chat.id, reported_user.id, reported_user.first_name))],
-              [InlineKeyboardButton(u"Hapus pesan", callback_data="{}=delete={}={}".format(chat.id, reported_user.id, message.reply_to_message.message_id))],
-              [InlineKeyboardButton(u"Tutup Tombol", callback_data="{}=close={}={}".format(chat.id, reported_user.id, reported_user.first_name))]
+              [InlineKeyboardButton(u"⚠️ Tendang", callback_data="report_{}=kick={}={}".format(chat.id, reported_user.id, reported_user.first_name)),
+              InlineKeyboardButton(u"⛔️ Banned", callback_data="report_{}=banned={}={}".format(chat.id, reported_user.id, reported_user.first_name))],
+              [InlineKeyboardButton(u"Hapus pesan", callback_data="report_{}=delete={}={}".format(chat.id, reported_user.id, message.reply_to_message.message_id))],
+              [InlineKeyboardButton(u"Tutup Tombol", callback_data="report_{}=close={}={}".format(chat.id, reported_user.id, reported_user.first_name))]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -128,7 +128,7 @@ def report(bot: Bot, update: Update) -> str:
 
 def button(bot, update):
     query = update.callback_query
-    splitter = query.data.split("=")
+    splitter = query.data.replace("report_", "").split("=")
     chat = update.effective_chat
     if splitter[1] == "kick":
         try:
@@ -213,8 +213,9 @@ CATATAN: tidak satu pun dari ini akan dipicu jika digunakan oleh admin
 REPORT_HANDLER = CommandHandler("report", report, filters=Filters.group)
 SETTING_HANDLER = CommandHandler("reports", report_setting, pass_args=True)
 ADMIN_REPORT_HANDLER = RegexHandler("(?i)@admin(s)?", report)
+Callback_Report = CallbackQueryHandler(button, pattern=r"report_")
 
 dispatcher.add_handler(REPORT_HANDLER, REPORT_GROUP)
 dispatcher.add_handler(ADMIN_REPORT_HANDLER, REPORT_GROUP)
 dispatcher.add_handler(SETTING_HANDLER)
-dispatcher.add_handler(CallbackQueryHandler(button))
+dispatcher.add_handler(Callback_Report)
