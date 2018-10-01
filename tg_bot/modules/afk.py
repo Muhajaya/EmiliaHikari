@@ -4,7 +4,7 @@ from telegram import Message, Update, Bot, User
 from telegram import MessageEntity
 from telegram.ext import Filters, MessageHandler, run_async
 
-from tg_bot import dispatcher
+from tg_bot import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS
 from tg_bot.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 from tg_bot.modules.sql import afk_sql as sql
 from tg_bot.modules.users import get_user_id
@@ -66,22 +66,19 @@ def reply_afk(bot: Bot, update: Update):
                     else:
                         res = "{} sedang AFK!\nKarena : {}".format(fst_name, reason)
                     message.reply_text(res)
-            
-    #        check_afk(bot, update, user_id, fst_name)
 
-    # elif message.reply_to_message:
-    #     user_id = message.reply_to_message.from_user.id
-    #     fst_name = message.reply_to_message.from_user.first_name
-    #     check_afk(bot, update, user_id, fst_name)
-
-def check_afk(bot, update, user_id, fst_name):
-    if sql.is_afk(user_id):
-        user = sql.check_afk_status(user_id)
-        if not user.reason:
-            res = "{} sedang AFK!".format(fst_name)
-        else:
-            res = "{} sedang AFK!\nKarena : {}".format(fst_name, user.reason)
-        update.effective_message.reply_text(res)
+    elif message.reply_to_message:
+        user_id = message.reply_to_message.from_user.id
+        if user_id == OWNER_ID:
+            fst_name = message.reply_to_message.from_user.first_name
+            if sql.is_afk(user_id):
+                valid, reason = sql.check_afk_status(user_id)
+                if valid:
+                    if not reason:
+                        res = "{} sedang AFK!".format(fst_name)
+                    else:
+                        res = "{} sedang AFK!\nKarena : {}".format(fst_name, reason)
+                    message.reply_text(res)
 
 
 __help__ = """

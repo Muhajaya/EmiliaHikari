@@ -153,19 +153,19 @@ def slap(bot: Bot, update: Update, args: List[str]):
     reply_text = msg.reply_to_message.reply_text if msg.reply_to_message else msg.reply_text
 
     # get user who sent message
-    if msg.from_user.username:
-        curr_user = "@" + escape_markdown(msg.from_user.username)
-    else:
-        curr_user = "[{}](tg://user?id={})".format(msg.from_user.first_name, msg.from_user.id)
+    #if msg.from_user.username:
+    #    curr_user = "@" + escape_markdown(msg.from_user.username)
+    #else:
+    curr_user = "[{}](tg://user?id={})".format(msg.from_user.first_name, msg.from_user.id)
 
     user_id = extract_user(update.effective_message, args)
     if user_id:
         slapped_user = bot.get_chat(user_id)
         user1 = curr_user
-        if slapped_user.username:
-            user2 = "@" + escape_markdown(slapped_user.username)
-        else:
-            user2 = "[{}](tg://user?id={})".format(slapped_user.first_name,
+        #if slapped_user.username:
+        #    user2 = "@" + escape_markdown(slapped_user.username)
+        #else
+        user2 = "[{}](tg://user?id={})".format(slapped_user.first_name,
                                                    slapped_user.id)
 
     # if no target found, bot targets the sender
