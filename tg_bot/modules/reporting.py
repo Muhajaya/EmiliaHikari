@@ -57,6 +57,7 @@ def report(bot: Bot, update: Update) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     global msg
+    global keyboard
 
     if chat and message.reply_to_message and sql.chat_should_report(chat.id):
         reported_user = message.reply_to_message.from_user  # type: Optional[User]
@@ -130,46 +131,44 @@ def button(bot, update):
     query = update.callback_query
     splitter = query.data.replace("report_", "").split("=")
     chat = update.effective_chat
+    global report_chat, report_method, report_target, report_name
+    report_chat = splitter[0]
+    report_method = splitter[1]
+    report_target = splitter[2]
+    report_name = splitter[3]
     if splitter[1] == "kick":
-        try:
-            bot.kickChatMember(splitter[0], splitter[2])
-            bot.unbanChatMember(splitter[0], splitter[2])
-            bot.sendMessage(splitter[0], text="[{}](tg://user?id={}) telah di tendang!\nOleh: [{}](tg://user?id={})".format(\
-                splitter[3], splitter[2], chat.first_name, chat.id), \
-                parse_mode=ParseMode.MARKDOWN)
-            bot.edit_message_text(text=msg + "\n\n{} telah di tendang!".format(splitter[3]),
+        keyboard = [
+            [InlineKeyboardButton(u"Ya", callback_data="ask_kick+y"),
+            InlineKeyboardButton(u"Tidak", callback_data="ask_kick+n")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        bot.edit_message_text(text=msg + "\n\nApakah anda yakin ingin menendang {}?".format(splitter[3]),
                           chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
-        except Exception as err:
-            bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
-                          chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+                          message_id=query.message.message_id, parse_mode=ParseMode.HTML,
+                          reply_markup=reply_markup)
     elif splitter[1] == "banned":
-        try:
-            bot.kickChatMember(splitter[0], splitter[2])
-            bot.sendMessage(splitter[0], text="[{}](tg://user?id={}) telah di banned!\nOleh: [{}](tg://user?id={})".format(\
-                splitter[3], splitter[2], chat.first_name, chat.id), \
-                parse_mode=ParseMode.MARKDOWN)
-            bot.edit_message_text(text=msg + "\n\n{} telah di banned!".format(splitter[3]),
+        keyboard = [
+            [InlineKeyboardButton(u"Ya", callback_data="ask_banned+y"),
+            InlineKeyboardButton(u"Tidak", callback_data="ask_banned+n")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        bot.edit_message_text(text=msg + "\n\nApakah anda yakin ingin banned {}?".format(splitter[3]),
                           chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
-        except Exception as err:
-            bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
-                          chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+                          message_id=query.message.message_id, parse_mode=ParseMode.HTML,
+                          reply_markup=reply_markup)
     elif splitter[1] == "delete":
-        try:
-            bot.deleteMessage(splitter[0], splitter[3])
-            bot.edit_message_text(text=msg + "\n\nPesan dihapus!",
+        keyboard = [
+            [InlineKeyboardButton(u"Ya", callback_data="ask_delete+y"),
+            InlineKeyboardButton(u"Tidak", callback_data="ask_delete+n")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        bot.edit_message_text(text=msg + "\n\nHapus pesan?",
                           chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
-        except Exception as err:
-            bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
-                          chat_id=query.message.chat_id,
-                          message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+                          message_id=query.message.message_id, parse_mode=ParseMode.HTML,
+                          reply_markup=reply_markup)
     elif splitter[1] == "close":
         try:
-            bot.edit_message_text(text=msg + "\n\nDitutup!",
+            bot.edit_message_text(text=msg + "\n\nTombol ditutup!",
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id, parse_mode=ParseMode.HTML)
         except Exception as err:
@@ -181,7 +180,57 @@ def button(bot, update):
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
         """
-    
+
+
+def buttonask(bot, update):
+    query = update.callback_query
+    splitter = query.data.replace("ask_", "").split("+")
+    chat = update.effective_chat
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    if splitter[1] == "y":
+        if splitter[0] == "kick":
+            try:
+                bot.kickChatMember(report_chat, report_target)
+                bot.unbanChatMember(report_chat, report_target)
+                bot.sendMessage(report_chat, text="[{}](tg://user?id={}) telah di tendang!\nOleh: [{}](tg://user?id={})".format(\
+                    report_name, report_target, chat.first_name, chat.id), \
+                    parse_mode=ParseMode.MARKDOWN)
+                bot.edit_message_text(text=msg + "\n\n{} telah di tendang!".format(report_name),
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+            except Exception as err:
+                bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+        elif splitter[0] == "banned":
+            try:
+                bot.kickChatMember(report_chat, report_target)
+                bot.sendMessage(report_chat, text="[{}](tg://user?id={}) telah di banned!\nOleh: [{}](tg://user?id={})".format(\
+                    report_name, report_target, chat.first_name, chat.id), \
+                    parse_mode=ParseMode.MARKDOWN)
+                bot.edit_message_text(text=msg + "\n\n{} telah di banned!".format(report_name),
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+            except Exception as err:
+                bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+        elif splitter[0] == "delete":
+            try:
+                bot.deleteMessage(report_chat, report_name)
+                bot.edit_message_text(text=msg + "\n\nPesan dihapus!",
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+            except Exception as err:
+                bot.edit_message_text(text=msg + "\n\nError: {}".format(err),
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML)
+    elif splitter[1] == "n":
+        bot.edit_message_text(text=msg,
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id, parse_mode=ParseMode.HTML,
+                              reply_markup=reply_markup)
+
 
 def __migrate__(old_chat_id, new_chat_id):
     sql.migrate_chat(old_chat_id, new_chat_id)
@@ -214,8 +263,10 @@ REPORT_HANDLER = CommandHandler("report", report, filters=Filters.group)
 SETTING_HANDLER = CommandHandler("reports", report_setting, pass_args=True)
 ADMIN_REPORT_HANDLER = RegexHandler("(?i)@admin(s)?", report)
 Callback_Report = CallbackQueryHandler(button, pattern=r"report_")
+Callback_ReportAsk = CallbackQueryHandler(buttonask, pattern=r"ask_")
 
 dispatcher.add_handler(REPORT_HANDLER, REPORT_GROUP)
 dispatcher.add_handler(ADMIN_REPORT_HANDLER, REPORT_GROUP)
 dispatcher.add_handler(SETTING_HANDLER)
 dispatcher.add_handler(Callback_Report)
+dispatcher.add_handler(Callback_ReportAsk)
