@@ -16,6 +16,7 @@ from tg_bot.modules.log_channel import loggable
 
 @run_async
 @bot_admin
+@can_restrict
 @user_admin
 @loggable
 def mute(bot: Bot, update: Update, args: List[str]) -> str:
@@ -30,6 +31,11 @@ def mute(bot: Bot, update: Update, args: List[str]) -> str:
 
     if user_id == bot.id:
         message.reply_text("Saya tidak akan membungkam diri saya sendiri!")
+        return ""
+
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
     member = chat.get_member(int(user_id))
@@ -68,6 +74,11 @@ def unmute(bot: Bot, update: Update, args: List[str]) -> str:
     user_id = extract_user(message, args)
     if not user_id:
         message.reply_text("Anda harus memberi saya nama pengguna untuk menyuarakan, atau membalas seseorang untuk disuarakan.")
+        return ""
+
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
     member = chat.get_member(int(user_id))
@@ -133,6 +144,11 @@ def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
 
     if user_id == bot.id:
         message.reply_text("Saya tidak akan membisukan diri saya sendiri, apakah kamu gila?")
+        return ""
+
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
     if not reason:

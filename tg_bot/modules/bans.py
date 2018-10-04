@@ -48,6 +48,11 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Saya tidak akan BAN diri saya sendiri, apakah kamu gila? 😠")
         return ""
 
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
+        return ""
+
     log = "<b>{}:</b>" \
           "\n#BANNED" \
           "\n<b>Admin:</b> {}" \
@@ -109,6 +114,11 @@ def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
 
     if user_id == bot.id:
         message.reply_text("Saya tidak akan BAN diri saya sendiri, apakah kamu gila?")
+        return ""
+
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
     if not reason:
@@ -192,6 +202,11 @@ def kick(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Yahhh aku tidak akan melakukan itu 😝")
         return ""
 
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
+        return ""
+
     res = chat.unban_member(user_id)  # unban on current user = kick
     if res:
         bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
@@ -261,6 +276,11 @@ def unban(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Mengapa Anda mencoba unbanned seseorang yang sudah ada di obrolan? 😑")
         return ""
 
+    check = bot.getChatMember(chat.id, user.id)
+    if check['can_restrict_members'] == False:
+        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
+        return ""
+
     chat.unban_member(user_id)
     message.reply_text("Ya, pengguna ini dapat bergabung! 😁")
 
@@ -287,7 +307,7 @@ __help__ = """
  - /kick <userhandle>: menendang seorang pengguna, (via pegangan, atau balasan)
 """
 
-__mod_name__ = "Bans"
+__mod_name__ = "Banned"
 
 BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.group)
 TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.group)
