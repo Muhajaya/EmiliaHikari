@@ -61,10 +61,6 @@ if ENV:
         API_WEATHER = os.environ.get('API_OPENWEATHER', None)
     except:
         API_WEATHER = None
-    try:
-        API_ANIME = os.environ.get('API_WHATANIME', None)
-    except:
-        API_ANIME = None
 
 else:
     from tg_bot.config import Development as Config
@@ -110,10 +106,6 @@ else:
         API_WEATHER = Config.API_OPENWEATHER
     except:
         API_WEATHER = None
-    try:
-        API_ANIME = Config.API_WHATANIME
-    except:
-        API_ANIME = None
 
 
 SUDO_USERS.add(OWNER_ID)

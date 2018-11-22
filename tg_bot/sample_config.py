@@ -35,7 +35,6 @@ class Config(object):
     BAN_STICKER = 'CAADAgADOwADPPEcAXkko5EB3YGYAg'  # stiker banhammer marie
     ALLOW_EXCL = False  # Mengizinkan ! perintah seperti /
     # API_OPENWEATHER = "OPENWEATHER API ANDA DI SINI"
-    # API_WHATANIME = "API ANDA APA ANIME DI SINI"
 
 
 class Production(Config):
