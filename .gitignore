@@ -1,0 +1,19 @@
+emilbeta/config.py
+*.pyc
+.idea/
+.gitconfig
+
+# Remove this shit
+emilbeta/__pycache__
+emilbeta/modules/__pycache__
+emilbeta/modules/helper_funcs/__pycache__
+emilbeta/modules/sql/__pycache__
+
+# Also remove this shit too
+.bash_history
+.bash_logout
+.bashrc
+.cloud-locale-test.skip
+.profile
+.pgpass
+.python_history
