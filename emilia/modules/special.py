@@ -302,11 +302,11 @@ def kitabgaul(bot: Bot, update: Update):
 		tbalas = ""
 		bbalas = ""
 		if len(trend.get('entries')) == 0:
-			return message.reply_text("Tidak ada Hasil dari {}".format(teks), parse_mode=ParseMode.MARKDOWN)
+			return message.reply_text("Tidak ada Hasil yang ditampilkan!", parse_mode=ParseMode.MARKDOWN)
 		for x in range(3):
 			tbalas += "*{}. {}*\n*Slug:* `{}`\n*Definisi:* `{}`\n*Contoh:* `{}`\n\n".format(x+1, trend.get('entries')[x].get('word'), trend.get('entries')[x].get('slug'), trend.get('entries')[x].get('definition'), trend.get('entries')[x].get('example'))
 		if len(best.get('entries')) == 0:
-			return message.reply_text("Tidak ada Hasil dari {}".format(teks), parse_mode=ParseMode.MARKDOWN)
+			return message.reply_text("Tidak ada Hasil yang ditampilkan!", parse_mode=ParseMode.MARKDOWN)
 		for x in range(3):
 			bbalas += "*{}. {}*\n*Slug:* `{}`\n*Definisi:* `{}`\n*Contoh:* `{}`\n\n".format(x+1, best.get('entries')[x].get('word'), best.get('entries')[x].get('slug'), best.get('entries')[x].get('definition'), best.get('entries')[x].get('example'))
 		balas = "*<== Trending saat ini ==>*\n\n{}*<== Terbaik saat ini ==>*\n\n{}".format(tbalas, bbalas)
