@@ -137,6 +137,13 @@ def button(bot, update):
   report_target = splitter[2]
   report_name = splitter[3]
   admin_list = bot.getChatAdministrators(report_chat)
+  try:
+    cek = msg
+    cek = keyboard
+  except:
+    return bot.edit_message_text(text="Sesi telah berakhir!\nSilahkan di eksekusi manual ya kak!",
+                   chat_id=query.message.chat_id,
+                   message_id=query.message.message_id, parse_mode=ParseMode.HTML)
   idadmin = []
   for x in admin_list:
     idadmin.append(x.user.id)
@@ -194,6 +201,13 @@ def buttonask(bot, update):
   query = update.callback_query
   splitter = query.data.replace("ask_", "").split("+")
   chat = update.effective_chat
+  try:
+    cek = msg
+    cek = keyboard
+  except:
+    return bot.edit_message_text(text="Sesi telah berakhir!\nSilahkan di eksekusi manual ya kak!",
+                   chat_id=query.message.chat_id,
+                   message_id=query.message.message_id, parse_mode=ParseMode.HTML)
   reply_markup = InlineKeyboardMarkup(keyboard)
   if splitter[1] == "y":
     if splitter[0] == "kick":
