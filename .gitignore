@@ -1,13 +1,13 @@
-emilbeta/config.py
+emilia/config.py
 *.pyc
 .idea/
 .gitconfig
 
 # Remove this shit
-emilbeta/__pycache__
-emilbeta/modules/__pycache__
-emilbeta/modules/helper_funcs/__pycache__
-emilbeta/modules/sql/__pycache__
+emilia/__pycache__
+emilia/modules/__pycache__
+emilia/modules/helper_funcs/__pycache__
+emilia/modules/sql/__pycache__
 
 # Also remove this shit too
 .bash_history

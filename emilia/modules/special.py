@@ -289,6 +289,41 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 		return
 
 @run_async
+def kitabgaul(bot: Bot, update: Update):
+	msg = update.effective_message
+	chat_id = update.effective_chat.id
+	message = update.effective_message
+	try:
+		args = update.effective_message.text.split(None, 1)
+		teks = args[1]
+	except IndexError:
+		trend = requests.get("https://kitabgaul.com/api/entries;trending").json()
+		best = requests.get("https://kitabgaul.com/api/entries;best").json()
+		tbalas = ""
+		bbalas = ""
+		if len(trend.get('entries')) == 0:
+			return message.reply_text("Tidak ada Hasil dari {}".format(teks), parse_mode=ParseMode.MARKDOWN)
+		for x in range(3):
+			tbalas += "*{}. {}*\n*Slug:* `{}`\n*Definisi:* `{}`\n*Contoh:* `{}`\n\n".format(x+1, trend.get('entries')[x].get('word'), trend.get('entries')[x].get('slug'), trend.get('entries')[x].get('definition'), trend.get('entries')[x].get('example'))
+		if len(best.get('entries')) == 0:
+			return message.reply_text("Tidak ada Hasil dari {}".format(teks), parse_mode=ParseMode.MARKDOWN)
+		for x in range(3):
+			bbalas += "*{}. {}*\n*Slug:* `{}`\n*Definisi:* `{}`\n*Contoh:* `{}`\n\n".format(x+1, best.get('entries')[x].get('word'), best.get('entries')[x].get('slug'), best.get('entries')[x].get('definition'), best.get('entries')[x].get('example'))
+		balas = "*<== Trending saat ini ==>*\n\n{}*<== Terbaik saat ini ==>*\n\n{}".format(tbalas, bbalas)
+		message.reply_text(balas, parse_mode=ParseMode.MARKDOWN)
+	kbgaul = requests.get("https://kitabgaul.com/api/entries/{}".format(teks)).json()
+	balas = "*Hasil dari {}*\n\n".format(teks)
+	if len(kbgaul.get('entries')) == 0:
+		return message.reply_text("Tidak ada Hasil dari {}".format(teks), parse_mode=ParseMode.MARKDOWN)
+	if len(kbgaul.get('entries')) >= 3:
+		jarak = 3
+	else:
+		jarak = len(kbgaul.get('entries'))
+	for x in range(jarak):
+		balas += "*{}. {}*\n*Slug:* `{}`\n*Definisi:* `{}`\n*Contoh:* `{}`\n\n".format(x+1, kbgaul.get('entries')[x].get('word'), kbgaul.get('entries')[x].get('slug'), kbgaul.get('entries')[x].get('definition'), kbgaul.get('entries')[x].get('example'))
+	message.reply_text(balas, parse_mode=ParseMode.MARKDOWN)
+
+@run_async
 def log(bot: Bot, update: Update):
 	message = update.effective_message
 	eventdict = message.to_dict()
@@ -304,6 +339,7 @@ __help__ = """
  - /tr <target> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
  - /wiki <teks>: mencari teks yang ditulis dari sumber wikipedia
  - /kbbi <teks>: mencari teks yang ditulis dari kamus besar bahasa indonesia
+ - /kbgaul <teks>: mencari arti dan definisi yang ditulis dari kitab gaul, tulis `/kbgaul` untuk mendapatkan kata trending dan terbaik
 
  Note : teks untuk di terjemah tidak bisa dicampur emoticon
 """
@@ -322,6 +358,7 @@ RAMALAN_HANDLER = DisableAbleCommandHandler("ramalan", ramalan)
 TERJEMAH_HANDLER = DisableAbleCommandHandler("tr", terjemah)
 WIKIPEDIA_HANDLER = DisableAbleCommandHandler("wiki", wiki)
 KBBI_HANDLER = DisableAbleCommandHandler("kbbi", kamusbesarbahasaindonesia)
+KBGAUL_HANDLER = DisableAbleCommandHandler("kbgaul", kitabgaul)
 LOG_HANDLER = DisableAbleCommandHandler("log", log, filters=Filters.user(OWNER_ID))
 
 dispatcher.add_handler(PING_HANDLER)
@@ -336,4 +373,5 @@ dispatcher.add_handler(RAMALAN_HANDLER)
 dispatcher.add_handler(TERJEMAH_HANDLER)
 dispatcher.add_handler(WIKIPEDIA_HANDLER)
 dispatcher.add_handler(KBBI_HANDLER)
+dispatcher.add_handler(KBGAUL_HANDLER)
 dispatcher.add_handler(LOG_HANDLER)

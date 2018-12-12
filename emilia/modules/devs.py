@@ -39,7 +39,7 @@ def executor(bot: Bot, update: Update):
 
 
 REBOOT_HANDLER = DisableAbleCommandHandler("reboot", reboot, filters=Filters.user(OWNER_ID))
-EXEC_HANDLER = DisableAbleCommandHandler("exec", executor, filters=Filters.user(OWNER_ID))
+EXEC_HANDLER = DisableAbleCommandHandler("eksekusi", executor, filters=Filters.user(OWNER_ID))
 
-dispatcher.add_handler(REBOOT_HANDLER)
+#dispatcher.add_handler(REBOOT_HANDLER)
 dispatcher.add_handler(EXEC_HANDLER)
