@@ -1,4 +1,4 @@
-import json, time
+import json, time, os
 from io import BytesIO
 from typing import Optional
 
@@ -140,8 +140,9 @@ def export_data(bot: Bot, update: Update):
     f.close()
     bot.sendChatAction(chat_id, "upload_document")
     tgl = time.strftime("%H:%M:%S - %d/%m/%Y", time.localtime(time.time()))
+    bot.sendMessage(-1001405078933, "*Berhasil mencadangan untuk:*\nNama chat: `{}`\nID chat: `{}`\nPada: `{}`".format(chat.title, chat_id, tgl), parse_mode=ParseMode.MARKDOWN)
     bot.sendDocument(chat_id, document=open('cadangan{}.backup'.format(chat_id), 'rb'), caption="*Berhasil mencadangan untuk:*\nNama chat: `{}`\nID chat: `{}`\nPada: `{}`\n\nNote: cadangan ini khusus untuk bot ini, jika di import ke bot lain maka catatan dokumen, video, audio, voice, dan lain-lain akan hilang".format(chat.title, chat_id, tgl), timeout=360, reply_to_message_id=msg.message_id, parse_mode=ParseMode.MARKDOWN)
-
+    os.remove("cadangan{}.backup".format(chat_id)) # Cleaning file
 
 
 __mod_name__ = "Backups"
@@ -153,8 +154,10 @@ __help__ = """
  - /export: export data grup, yang akan di export adalah: peraturan, catatan (dokumen, gambar, musik, video, audio, voice, teks, tombol teks). \
  Modul ini masih tahap beta, jika ada masalah, laporkan ke @AyraHikari
 """
+
 IMPORT_HANDLER = CommandHandler("import", import_data)
-EXPORT_HANDLER = CommandHandler("export", export_data, filters=Filters.user(OWNER_ID))
+EXPORT_HANDLER = CommandHandler("export", export_data)
+# EXPORT_HANDLER = CommandHandler("export", export_data, filters=Filters.user(OWNER_ID))
 
 dispatcher.add_handler(IMPORT_HANDLER)
 dispatcher.add_handler(EXPORT_HANDLER)
