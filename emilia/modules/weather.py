@@ -79,10 +79,10 @@ def cuaca(bot, update, args):
                 statusnya, temperatur) +
                 "Untuk besok pada pukul 06:00, akan {}, sekitar {}°C".format(statusbesok, temperaturbesok))
 
-    except exceptions.not_found_error:
-        update.effective_message.reply_text("Maaf, lokasi tidak ditemukan 😞")
     except pyowm.exceptions.api_call_error.APICallError:
         update.effective_message.reply_text("Tulis lokasi untuk mengecek cuacanya")
+    except pyowm.exceptions.api_response_error.NotFoundError:
+        update.effective_message.reply_text("Maaf, lokasi tidak ditemukan 😞")
     else:
         return
 

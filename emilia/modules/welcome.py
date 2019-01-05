@@ -141,15 +141,20 @@ def new_member(bot: Bot, update: Update):
 
                 #Security soft mode
                 if sql.welcome_security(chat.id) == "soft":
-                    bot.restrict_chat_member(chat.id, new_mem.id, can_send_messages=True, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False, until_date=(int(time.time() + 24 * 60 * 60)))
+                    try:
+                        bot.restrict_chat_member(chat.id, new_mem.id, can_send_messages=True, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False, until_date=(int(time.time() + 24 * 60 * 60)))
+                    except:
+                        pass
 
                 #Add "I'm not bot button if enabled hard security"
                 if sql.welcome_security(chat.id) == "hard":
-                    update.effective_message.reply_text("Hai {}, klik tombol di bawah ini untuk disuarakan.".format(new_mem.first_name), 
+                    try:
+                        update.effective_message.reply_text("Hai {}, klik tombol di bawah ini untuk disuarakan.".format(new_mem.first_name), 
                          reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="Klik di sini untuk meyakinkan Anda manusia!", 
                          callback_data="check_bot_({})".format(new_mem.id)) ]]))
-
-                    bot.restrict_chat_member(chat.id, new_mem.id, can_send_messages=False, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False)
+                        bot.restrict_chat_member(chat.id, new_mem.id, can_send_messages=False, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False)
+                    except:
+                        pass
 
                 
             prev_welc = sql.get_clean_pref(chat.id)
