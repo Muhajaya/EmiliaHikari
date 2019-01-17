@@ -1,11 +1,12 @@
 import re
 import sre_constants
+import time
 
 import telegram
 from telegram import Update, Bot
 from telegram.ext import run_async
 
-from emilia import dispatcher, LOGGER
+from emilia import dispatcher, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleRegexHandler
 
 DELIMITERS = ("/", ":", "|", "_")
@@ -48,54 +49,70 @@ def separate_sed(sed_string):
             flags = sed_string[counter:]
         return replace, replace_with, flags.lower()
 
+def elapsed_time():
+    global start_time
+    return time.time() - start_time
+
+number = 0
+score = 0
+start_time = time.time()
+max_time = 5
 
 @run_async
 def sed(bot: Bot, update: Update):
-    sed_result = separate_sed(update.effective_message.text)
-    if sed_result and update.effective_message.reply_to_message:
-        if update.effective_message.reply_to_message.text:
-            to_fix = update.effective_message.reply_to_message.text
-        elif update.effective_message.reply_to_message.caption:
-            to_fix = update.effective_message.reply_to_message.caption
-        else:
-            return
-
-        repl, repl_with, flags = sed_result
-
-        if not repl:
-            update.effective_message.reply_to_message.reply_text("Anda mencoba untuk mengganti... "
-                                                                 "tidak ada apa-apa dengan sesuatu?")
-            return
-
-        try:
-            check = re.match(repl, to_fix, flags=re.IGNORECASE)
-
-            if check and check.group(0).lower() == to_fix.lower():
-                update.effective_message.reply_to_message.reply_text("Hai semuanya, {} sedang mencoba untuk membuat "
-                                                                     "saya mengatakan hal-hal yang saya tidak mau "
-                                                                     "katakan!".format(update.effective_user.first_name))
+    start = time.time()
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+    if update.effective_message.from_user.id != 388576209:
+        return
+    while elapsed_time() < max_time:
+        sed_result = separate_sed(update.effective_message.text)
+        if sed_result and update.effective_message.reply_to_message:
+            if update.effective_message.reply_to_message.text:
+                to_fix = update.effective_message.reply_to_message.text
+            elif update.effective_message.reply_to_message.caption:
+                to_fix = update.effective_message.reply_to_message.caption
+            else:
                 return
 
-            if 'i' in flags and 'g' in flags:
-                text = re.sub(repl, repl_with, to_fix, flags=re.I).strip()
-            elif 'i' in flags:
-                text = re.sub(repl, repl_with, to_fix, count=1, flags=re.I).strip()
-            elif 'g' in flags:
-                text = re.sub(repl, repl_with, to_fix).strip()
-            else:
-                text = re.sub(repl, repl_with, to_fix, count=1).strip()
-        except sre_constants.error:
-            LOGGER.warning(update.effective_message.text)
-            LOGGER.exception("SRE constant error")
-            update.effective_message.reply_text("Apakah itu sed? Sepertinya tidak.")
-            return
+            repl, repl_with, flags = sed_result
 
-        # empty string errors -_-
-        if len(text) >= telegram.MAX_MESSAGE_LENGTH:
-            update.effective_message.reply_text("Hasil dari perintah sed terlalu lama untuk \
-                                                 telegram!")
-        elif text:
-            update.effective_message.reply_to_message.reply_text(text)
+            if not repl:
+                update.effective_message.reply_to_message.reply_text("Anda mencoba untuk mengganti... "
+                                                                     "tidak ada apa-apa dengan sesuatu?")
+                return
+
+            try:
+                check = re.match(repl, to_fix, flags=re.IGNORECASE)
+
+                if check and check.group(0).lower() == to_fix.lower():
+                    update.effective_message.reply_to_message.reply_text("Hai semuanya, {} sedang mencoba untuk membuat "
+                                                                         "saya mengatakan hal-hal yang saya tidak mau "
+                                                                         "katakan!".format(update.effective_user.first_name))
+                    return
+
+                if 'i' in flags and 'g' in flags:
+                    text = re.sub(repl, repl_with, to_fix, flags=re.I).strip()
+                elif 'i' in flags:
+                    text = re.sub(repl, repl_with, to_fix, count=1, flags=re.I).strip()
+                elif 'g' in flags:
+                    text = re.sub(repl, repl_with, to_fix).strip()
+                else:
+                    text = re.sub(repl, repl_with, to_fix, count=1).strip()
+            except sre_constants.error:
+                LOGGER.warning(update.effective_message.text)
+                LOGGER.exception("SRE constant error")
+                update.effective_message.reply_text("Apakah itu sed? Sepertinya tidak.")
+                return
+
+            # empty string errors -_-
+            if len(text) >= telegram.MAX_MESSAGE_LENGTH:
+                return update.effective_message.reply_text("Hasil dari perintah sed terlalu lama untuk \
+                                                     telegram!")
+            elif text:
+                return update.effective_message.reply_to_message.reply_text(text)
+    return update.effective_message.reply_to_message.reply_text("Hasil terlalu lama untuk di proses!")
 
 
 __help__ = """

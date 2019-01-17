@@ -6,7 +6,7 @@ from telegram.error import BadRequest
 from telegram.ext import Filters, MessageHandler, CommandHandler, run_async
 from telegram.utils.helpers import mention_html
 
-from emilia import dispatcher
+from emilia import dispatcher, spamfilters
 from emilia.modules.helper_funcs.chat_status import is_user_admin, user_admin, can_restrict
 from emilia.modules.log_channel import loggable
 from emilia.modules.sql import antiflood_sql as sql
@@ -60,6 +60,9 @@ def set_flood(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     if len(args) >= 1:
         val = args[0].lower()
@@ -99,6 +102,9 @@ def set_flood(bot: Bot, update: Update, args: List[str]) -> str:
 @run_async
 def flood(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     limit = sql.get_flood_limit(chat.id)
     if limit == 0:

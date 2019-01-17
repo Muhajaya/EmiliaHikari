@@ -8,7 +8,7 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, run_async, Filters
 
 import emilia.modules.sql.notes_sql as sql
-from emilia import dispatcher, LOGGER, OWNER_ID, SUDO_USERS
+from emilia import dispatcher, LOGGER, OWNER_ID, SUDO_USERS, spamfilters
 from emilia.__main__ import DATA_IMPORT
 from emilia.modules.helper_funcs.chat_status import user_admin
 from emilia.modules.helper_funcs.misc import build_keyboard, revert_buttons
@@ -24,6 +24,10 @@ def import_data(bot: Bot, update):
     chat = update.effective_chat  # type: Optional[Chat]
     # TODO: allow uploading doc with command, not just as reply
     # only work with a doc
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     if msg.reply_to_message and msg.reply_to_message.document:
         try:
             file_info = bot.get_file(msg.reply_to_message.document.file_id)
@@ -85,6 +89,10 @@ def import_data(bot: Bot, update):
 @user_admin
 def export_data(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     chat_id = update.effective_chat.id
     chat = update.effective_chat
     note_list = sql.get_all_chat_notes(chat_id)

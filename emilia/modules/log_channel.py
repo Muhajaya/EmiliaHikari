@@ -1,6 +1,7 @@
 from functools import wraps
 from typing import Optional
 
+from emilia import spamfilters
 from emilia.modules.helper_funcs.misc import is_module_loaded
 
 FILENAME = __name__.rsplit(".", 1)[-1]
@@ -58,6 +59,9 @@ if is_module_loaded(FILENAME):
     @run_async
     @user_admin
     def logging(bot: Bot, update: Update):
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
 
@@ -76,6 +80,9 @@ if is_module_loaded(FILENAME):
     @run_async
     @user_admin
     def setlog(bot: Bot, update: Update):
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
         if chat.type == chat.CHANNEL:
@@ -113,6 +120,9 @@ if is_module_loaded(FILENAME):
     @run_async
     @user_admin
     def unsetlog(bot: Bot, update: Update):
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
         message = update.effective_message  # type: Optional[Message]
         chat = update.effective_chat  # type: Optional[Chat]
 

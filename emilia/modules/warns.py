@@ -9,7 +9,7 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, run_async, DispatcherHandlerStop, MessageHandler, Filters, CallbackQueryHandler
 from telegram.utils.helpers import mention_html
 
-from emilia import dispatcher, BAN_STICKER
+from emilia import dispatcher, BAN_STICKER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import is_user_admin, bot_admin, user_admin_no_reply, user_admin, \
     can_restrict, is_user_ban_protected
@@ -129,6 +129,9 @@ def button(bot: Bot, update: Update) -> str:
 @can_restrict
 @loggable
 def warn_user(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     warner = update.effective_user  # type: Optional[User]
@@ -150,6 +153,9 @@ def warn_user(bot: Bot, update: Update, args: List[str]) -> str:
 @bot_admin
 @loggable
 def reset_warns(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -174,6 +180,9 @@ def reset_warns(bot: Bot, update: Update, args: List[str]) -> str:
 
 @run_async
 def warns(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user_id = extract_user(message, args) or update.effective_user.id
@@ -201,6 +210,9 @@ def warns(bot: Bot, update: Update, args: List[str]):
 # Dispatcher handler stop - do not async
 @user_admin
 def add_warn_filter(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
@@ -232,6 +244,9 @@ def add_warn_filter(bot: Bot, update: Update):
 
 @user_admin
 def remove_warn_filter(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
 
@@ -292,6 +307,9 @@ def remove_warn_filter(bot: Bot, update: Update):
 
 @run_async
 def list_warn_filters(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     all_handlers = sql.get_chat_warn_triggers(chat.id)
 
@@ -336,6 +354,9 @@ def reply_filter(bot: Bot, update: Update) -> str:
 @user_admin
 @loggable
 def set_warn_limit(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
@@ -364,6 +385,9 @@ def set_warn_limit(bot: Bot, update: Update, args: List[str]) -> str:
 @run_async
 @user_admin
 def set_warn_strength(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]

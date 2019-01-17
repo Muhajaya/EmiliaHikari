@@ -8,7 +8,7 @@ from telegram.ext import CommandHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown, mention_html
 
-from emilia import dispatcher, updater
+from emilia import dispatcher, updater, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import bot_admin, can_promote, user_admin, can_pin
 from emilia.modules.helper_funcs.extraction import extract_user
@@ -25,6 +25,10 @@ def promote(bot: Bot, update: Update, args: List[str]) -> str:
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     user_id = extract_user(message, args)
     if not user_id:
@@ -73,6 +77,10 @@ def demote(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     user_id = extract_user(message, args)
     if not user_id:
@@ -125,6 +133,10 @@ def pin(bot: Bot, update: Update, args: List[str]) -> str:
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     is_group = chat.type != "private" and chat.type != "channel"
 
     prev_message = update.effective_message.reply_to_message
@@ -157,6 +169,10 @@ def unpin(bot: Bot, update: Update) -> str:
     chat = update.effective_chat
     user = update.effective_user  # type: Optional[User]
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     try:
         bot.unpinChatMessage(chat.id)
     except BadRequest as excp:
@@ -176,6 +192,11 @@ def unpin(bot: Bot, update: Update) -> str:
 @user_admin
 def invite(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     if chat.username:
         update.effective_message.reply_text(chat.username)
     elif chat.type == chat.SUPERGROUP or chat.type == chat.CHANNEL:
@@ -191,6 +212,10 @@ def invite(bot: Bot, update: Update):
 
 @run_async
 def adminlist(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     administrators = update.effective_chat.get_administrators()
     text = "Admin di *{}*:".format(update.effective_chat.title or "chat ini")
     for admin in administrators:

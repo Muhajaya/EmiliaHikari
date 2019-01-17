@@ -22,7 +22,7 @@ from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
 
-from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, API_WEATHER
+from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, API_WEATHER, spamfilters
 from emilia.__main__ import STATS, USER_INFO
 from emilia.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 from emilia.modules.helper_funcs.extraction import extract_user
@@ -94,6 +94,9 @@ RAMALAN_STRINGS = (
 
 @run_async
 def stickerid(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	if msg.reply_to_message and msg.reply_to_message.sticker:
 		update.effective_message.reply_text("Hai " +
@@ -108,6 +111,9 @@ def stickerid(bot: Bot, update: Update):
 
 @run_async
 def fileid(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	if msg.reply_to_message and msg.reply_to_message.document:
 		update.effective_message.reply_text("Hai " +
@@ -122,6 +128,9 @@ def fileid(bot: Bot, update: Update):
 
 @run_async
 def getsticker(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	chat_id = update.effective_chat.id
 	if msg.reply_to_message and msg.reply_to_message.sticker:
@@ -146,6 +155,9 @@ def getsticker(bot: Bot, update: Update):
 
 @run_async
 def stiker(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat_id = update.effective_chat.id
 	args = update.effective_message.text.split(None, 1)
 	message = update.effective_message
@@ -157,6 +169,9 @@ def stiker(bot: Bot, update: Update):
 
 @run_async
 def file(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat_id = update.effective_chat.id
 	args = update.effective_message.text.split(None, 1)
 	message = update.effective_message
@@ -202,6 +217,9 @@ def leavechat(bot: Bot, update: Update, args: List[int]):
 
 @run_async
 def ping(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	start_time = time.time()
 	test = update.effective_message.reply_text("Pong!")
 	end_time = time.time()
@@ -211,31 +229,82 @@ def ping(bot: Bot, update: Update):
 
 @run_async
 def ramalan(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	update.effective_message.reply_text(random.choice(RAMALAN_STRINGS))    
 
 @run_async
 def terjemah(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	chat_id = update.effective_chat.id
+	lang = str("af,am,ar,az,be,bg,bn,bs,ca,ceb,co,cs,cy,da,de,el,en,eo,es,et,eu,fa,fi,fr,fy,ga,gd,gl,gu,ha,haw,hi,hmn,hr,ht,hu,hy,id,ig,is,it,iw,ja,jw,ka,kk,km,kn,ko,ku,ky,la,lb,lo,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,my,ne,nl,no,ny,pa,pl,ps,pt,ro,ru,sd,si,sk,sl,sm,sn,so,sq,sr,st,su,sv,sw,ta,te,tg,th,tl,tr,uk,ur,uz,vi,xh,yi,yo,zh,zh_CN,zh_TW,zu".split(","))
 	try:
 		if msg.reply_to_message and msg.reply_to_message.text:
 			args = update.effective_message.text.split(None, 1)
-			target = args[1]
+			try:
+				target = args[1].split(None, 1)[0]
+			except:
+				target = args[1]
+			try:
+				target2 = args[1].split(None, 2)[1]
+				if target2 not in lang:
+					target2 = None
+				else:
+					target = args[1].split(None, 2)[0]
+					target2 = args[1].split(None, 2)[1]
+			except:
+				target2 = None
 			teks = msg.reply_to_message.text
 			message = update.effective_message
 			trl = Translator()
-			deteksibahasa = trl.detect(teks)
-			tekstr = trl.translate(teks, dest=target)
-			message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+			if target2 == None:
+				deteksibahasa = trl.detect(teks)
+				tekstr = trl.translate(teks, dest=target)
+				if tekstr.pronunciation == None:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+				else:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n*Aksara:*\n`{}`\n*Teks:*\n`{}`".format(deteksibahasa.lang, target, tekstr.text, tekstr.pronunciation), parse_mode=ParseMode.MARKDOWN)
+			else:
+				tekstr = trl.translate(teks, dest=target2, src=target)
+				if tekstr.pronunciation == None:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(target, target2, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+				else:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n*Aksara:*\n`{}`\n*Teks:*\n`{}`".format(target, target2, tekstr.text, tekstr.pronunciation), parse_mode=ParseMode.MARKDOWN)
+			
 		else:
 			args = update.effective_message.text.split(None, 2)
 			target = args[1]
-			teks = args[2]
+			try:
+				target2 = args[2].split(None, 1)[0]
+				if target2 not in lang:
+					target2 = None
+					teks = args[2]
+				else:
+					target2 = args[2].split(None, 1)[0]
+					teks = args[2].split(None, 1)[1]
+			except:
+				target2 = None
+				teks = args[2]
 			message = update.effective_message
 			trl = Translator()
-			deteksibahasa = trl.detect(teks)
-			tekstr = trl.translate(teks, dest=target)
-			message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+			if target2 == None:
+				deteksibahasa = trl.detect(teks)
+				tekstr = trl.translate(teks, dest=target)
+				if tekstr.pronunciation == None:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(deteksibahasa.lang, target, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+				else:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n*Aksara:*\n`{}`\n*Teks:*\n`{}`".format(deteksibahasa.lang, target, tekstr.text, tekstr.pronunciation), parse_mode=ParseMode.MARKDOWN)
+			else:
+				tekstr = trl.translate(teks, dest=target2, src=target)
+				if tekstr.pronunciation == None:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n`{}`".format(target, target2, tekstr.text), parse_mode=ParseMode.MARKDOWN)
+				else:
+					return message.reply_text("Diterjemahkan dari `{}` ke `{}`:\n*Aksara:*\n`{}`\n*Teks:*\n`{}`".format(target, target2, tekstr.text, tekstr.pronunciation), parse_mode=ParseMode.MARKDOWN)
+				
 
 	except IndexError:
 		update.effective_message.reply_text("Balas pesan atau tulis pesan dari bahasa lain untuk "
@@ -248,6 +317,9 @@ def terjemah(bot: Bot, update: Update):
 
 @run_async
 def wiki(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	chat_id = update.effective_chat.id
 	try:
@@ -272,6 +344,9 @@ def wiki(bot: Bot, update: Update):
 
 @run_async
 def kamusbesarbahasaindonesia(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	chat_id = update.effective_chat.id
 	try:
@@ -290,6 +365,9 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 
 @run_async
 def kitabgaul(bot: Bot, update: Update):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
 	chat_id = update.effective_chat.id
 	message = update.effective_message
@@ -336,7 +414,9 @@ __help__ = """
  - /stickerid: balas pesan stiker di PM untuk mendapatkan id stiker
  - /ping: mengecek kecepatan bot
  - /ramalan: cek ramalan kamu hari ini
- - /tr <target> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
+ - /tr <dari> <ke> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
+ atau bisa juga dengan
+ - /tr <ke> <teks>: terjemahkan teks yang ditulis atau di balas untuk bahasa apa saja ke bahasa yang dituju
  - /wiki <teks>: mencari teks yang ditulis dari sumber wikipedia
  - /kbbi <teks>: mencari teks yang ditulis dari kamus besar bahasa indonesia
  - /kbgaul <teks>: mencari arti dan definisi yang ditulis dari kitab gaul, tulis `/kbgaul` untuk mendapatkan kata trending dan terbaik

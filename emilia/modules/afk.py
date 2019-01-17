@@ -4,7 +4,7 @@ from telegram import Message, Update, Bot, User
 from telegram import MessageEntity
 from telegram.ext import Filters, MessageHandler, run_async
 
-from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS
+from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 from emilia.modules.sql import afk_sql as sql
 from emilia.modules.users import get_user_id
@@ -15,6 +15,10 @@ AFK_REPLY_GROUP = 8
 
 @run_async
 def afk(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     args = update.effective_message.text.split(None, 1)
     if len(args) >= 2:
         reason = args[1]
@@ -40,6 +44,7 @@ def no_longer_afk(bot: Bot, update: Update):
 @run_async
 def reply_afk(bot: Bot, update: Update):
     message = update.effective_message  # type: Optional[Message]
+
     entities = message.parse_entities([MessageEntity.TEXT_MENTION, MessageEntity.MENTION])
     if message.entities and entities:
         for ent in entities:

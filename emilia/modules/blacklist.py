@@ -7,7 +7,7 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, Filters, run_async
 
 import emilia.modules.sql.blacklist_sql as sql
-from emilia import dispatcher, LOGGER
+from emilia import dispatcher, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import user_admin, user_not_admin
 from emilia.modules.helper_funcs.extraction import extract_text
@@ -23,6 +23,10 @@ def blacklist(bot: Bot, update: Update, args: List[str]):
     msg = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     
     conn = connected(bot, update, chat, user.id, need_admin=False)
     if not conn == False:
@@ -65,6 +69,10 @@ def add_blacklist(bot: Bot, update: Update):
     user = update.effective_user  # type: Optional[User]
     words = msg.text.split(None, 1)
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     conn = connected(bot, update, chat, user.id)
     if not conn == False:
         chat_id = conn
@@ -101,6 +109,10 @@ def unblacklist(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     words = msg.text.split(None, 1)
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     conn = connected(bot, update, chat, user.id)
     if not conn == False:

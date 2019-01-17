@@ -8,7 +8,7 @@ from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import emilia.modules.sql.connection_sql as sql
-from emilia import dispatcher, LOGGER, SUDO_USERS
+from emilia import dispatcher, LOGGER, SUDO_USERS, spamfilters
 from emilia.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_admin, can_restrict
 from emilia.modules.helper_funcs.extraction import extract_user, extract_user_and_text
 from emilia.modules.helper_funcs.string_handling import extract_time
@@ -38,6 +38,11 @@ def allow_connections(bot: Bot, update: Update, args: List[str]) -> str:
 def connect_chat(bot, update, args):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     if update.effective_chat.type == 'private':
         if len(args) >= 1:
             try:
@@ -65,6 +70,10 @@ def connect_chat(bot, update, args):
 
 
 def disconnect_chat(bot, update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     if update.effective_chat.type == 'private':
         disconnection_status = sql.disconnect(update.effective_message.from_user.id)
         if disconnection_status:
@@ -76,6 +85,10 @@ def disconnect_chat(bot, update):
 
 
 def connected(bot, update, chat, user_id, need_admin=True):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+        
     if chat.type == chat.PRIVATE and sql.get_connected_chat(user_id):
         conn_id = sql.get_connected_chat(user_id).chat_id
         if (bot.get_chat_member(conn_id, user_id).status in ('administrator', 'creator') or 

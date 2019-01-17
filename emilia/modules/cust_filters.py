@@ -8,7 +8,7 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
 
-from emilia import dispatcher, LOGGER
+from emilia import dispatcher, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import user_admin
 from emilia.modules.helper_funcs.extraction import extract_text
@@ -26,6 +26,10 @@ HANDLER_GROUP = 10
 def list_handlers(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     
     conn = connected(bot, update, chat, user.id, need_admin=False)
     if not conn == False:
@@ -66,6 +70,10 @@ def filters(bot: Bot, update: Update):
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
     args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     conn = connected(bot, update, chat, user.id)
     if not conn == False:
@@ -152,6 +160,10 @@ def stop_filter(bot: Bot, update: Update):
     user = update.effective_user  # type: Optional[User]
     args = update.effective_message.text.split(None, 1)
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     conn = connected(bot, update, chat, user.id)
     if not conn == False:
         chat_id = conn
@@ -185,6 +197,7 @@ def stop_filter(bot: Bot, update: Update):
 def reply_filter(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
+
     to_match = extract_text(message)
     if not to_match:
         return

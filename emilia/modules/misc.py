@@ -12,7 +12,7 @@ from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
 
-from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER
+from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, spamfilters
 from emilia.__main__ import STATS, USER_INFO
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.extraction import extract_user
@@ -141,11 +141,17 @@ GMAPS_TIME = "https://maps.googleapis.com/maps/api/timezone/json"
 
 @run_async
 def runs(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
     update.effective_message.reply_text(random.choice(RUN_STRINGS))
 
 @run_async
 def slap(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
     msg = update.effective_message  # type: Optional[Message]
 
@@ -194,6 +200,9 @@ def get_bot_ip(bot: Bot, update: Update):
 
 @run_async
 def get_id(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
     user_id = extract_user(update.effective_message, args)
     if user_id:
@@ -224,6 +233,9 @@ def get_id(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def info(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
     msg = update.effective_message  # type: Optional[Message]
     user_id = extract_user(update.effective_message, args)
@@ -280,6 +292,9 @@ def info(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def get_time(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     location = " ".join(args)
     if location.lower() == bot.first_name.lower():
         update.effective_message.reply_text("Selalu ada waktu banned untukku!")
@@ -361,6 +376,9 @@ Perlu diingat bahwa pesan Anda <b>HARUS</b> berisi beberapa teks selain hanya se
 
 @run_async
 def markdown_help(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
     update.effective_message.reply_text(MARKDOWN_HELP, parse_mode=ParseMode.HTML)
     update.effective_message.reply_text("Coba teruskan pesan berikut kepada saya, dan Anda akan lihat!")

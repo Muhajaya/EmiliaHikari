@@ -6,7 +6,7 @@ from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
 
-from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, API_WEATHER
+from emilia import dispatcher, OWNER_ID, SUDO_USERS, SUPPORT_USERS, WHITELIST_USERS, BAN_STICKER, API_WEATHER, spamfilters
 from emilia.__main__ import STATS, USER_INFO
 from emilia.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 from emilia.modules.helper_funcs.extraction import extract_user
@@ -39,7 +39,7 @@ def executor(bot: Bot, update: Update):
 
 
 REBOOT_HANDLER = DisableAbleCommandHandler("reboot", reboot, filters=Filters.user(OWNER_ID))
-EXEC_HANDLER = DisableAbleCommandHandler("eksekusi", executor, filters=Filters.user(OWNER_ID))
+EXEC_HANDLER = DisableAbleCommandHandler("emil", executor, filters=Filters.user(OWNER_ID))
 
 #dispatcher.add_handler(REBOOT_HANDLER)
 dispatcher.add_handler(EXEC_HANDLER)

@@ -5,7 +5,7 @@ from telegram import ParseMode, Update, Bot, Chat, User
 from telegram.ext import CommandHandler, RegexHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
-from emilia import dispatcher
+from emilia import dispatcher, spamfilters
 from emilia.modules.helper_funcs.handlers import CMD_STARTERS
 from emilia.modules.helper_funcs.misc import is_module_loaded
 
@@ -68,6 +68,10 @@ if is_module_loaded(FILENAME):
     @user_admin
     def disable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
         if len(args) >= 1:
             disable_cmd = args[0]
             if disable_cmd.startswith(CMD_STARTERS):
@@ -88,6 +92,10 @@ if is_module_loaded(FILENAME):
     @user_admin
     def enable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
         if len(args) >= 1:
             enable_cmd = args[0]
             if enable_cmd.startswith(CMD_STARTERS):
@@ -106,6 +114,9 @@ if is_module_loaded(FILENAME):
     @run_async
     @user_admin
     def list_cmds(bot: Bot, update: Update):
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -132,6 +143,9 @@ if is_module_loaded(FILENAME):
     def commands(bot: Bot, update: Update):
         chat = update.effective_chat
         update.effective_message.reply_text(build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN)
+        spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+        if spam == True:
+            return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
 
     def __stats__():

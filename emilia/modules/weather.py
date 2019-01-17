@@ -3,11 +3,14 @@ from pyowm import timeutils, exceptions
 from telegram import Message, Chat, Update, Bot
 from telegram.ext import run_async
 
-from emilia import dispatcher, updater, API_WEATHER
+from emilia import dispatcher, updater, API_WEATHER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 
 @run_async
 def cuaca(bot, update, args):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     location = " ".join(args)
     if location.lower() == bot.first_name.lower():
         update.effective_message.reply_text("Saya akan terus mengawasi di saat senang maupun sedih!")

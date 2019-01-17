@@ -10,7 +10,7 @@ from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import escape_markdown
 
 import emilia.modules.sql.notes_sql as sql
-from emilia import dispatcher, MESSAGE_DUMP, LOGGER
+from emilia import dispatcher, MESSAGE_DUMP, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import user_admin
 from emilia.modules.helper_funcs.misc import build_keyboard, revert_buttons
@@ -128,6 +128,9 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
 @run_async
 def cmd_get(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if len(args) >= 2 and args[1].lower() == "noformat":
         get(bot, update, args[0], show_none=True, no_format=True)
     elif len(args) >= 1:
@@ -138,6 +141,9 @@ def cmd_get(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def hash_get(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message.text
     fst_word = message.split()[0]
     no_hash = fst_word[1:]
@@ -148,6 +154,9 @@ def hash_get(bot: Bot, update: Update):
 @run_async
 @user_admin
 def save(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     conn = connected(bot, update, chat, user.id)
@@ -192,6 +201,9 @@ def save(bot: Bot, update: Update):
 @run_async
 @user_admin
 def clear(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     conn = connected(bot, update, chat, user.id)
@@ -223,6 +235,9 @@ def clear(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def list_notes(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     conn = connected(bot, update, chat, user.id, need_admin=False)

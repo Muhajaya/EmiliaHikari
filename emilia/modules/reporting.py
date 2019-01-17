@@ -7,7 +7,7 @@ from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, RegexHandler, run_async, Filters, CallbackQueryHandler
 from telegram.utils.helpers import mention_html
 
-from emilia import dispatcher, LOGGER
+from emilia import dispatcher, LOGGER, spamfilters
 from emilia.modules.helper_funcs.chat_status import user_not_admin, user_admin
 from emilia.modules.log_channel import loggable
 from emilia.modules.sql import reporting_sql as sql
@@ -18,6 +18,9 @@ REPORT_GROUP = 5
 @run_async
 @user_admin
 def report_setting(bot: Bot, update: Update, args: List[str]):
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat = update.effective_chat  # type: Optional[Chat]
 	msg = update.effective_message  # type: Optional[Message]
 
@@ -53,6 +56,9 @@ def report_setting(bot: Bot, update: Update, args: List[str]):
 @user_not_admin
 @loggable
 def report(bot: Bot, update: Update) -> str:
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	if spam == True:
+		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	message = update.effective_message  # type: Optional[Message]
 	chat = update.effective_chat  # type: Optional[Chat]
 	user = update.effective_user  # type: Optional[User]

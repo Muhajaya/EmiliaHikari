@@ -10,7 +10,7 @@ from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
 import emilia.modules.sql.locks_sql as sql
-from emilia import dispatcher, SUDO_USERS, LOGGER
+from emilia import dispatcher, SUDO_USERS, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
     bot_can_delete, is_bot_admin
@@ -92,6 +92,9 @@ def unrestr_members(bot, chat_id, members, messages=True, media=True, other=True
 
 @run_async
 def locktypes(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     update.effective_message.reply_text("\n - ".join(["Locks: "] + list(LOCK_TYPES) + list(RESTRICTION_TYPES)))
 
 
@@ -99,6 +102,9 @@ def locktypes(bot: Bot, update: Update):
 @bot_can_delete
 @loggable
 def lock(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -140,6 +146,9 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
 @user_admin
 @loggable
 def unlock(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -273,6 +282,9 @@ def build_lock_message(chat_id):
 @run_async
 @user_admin
 def list_locks(bot: Bot, update: Update):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
 
     res = build_lock_message(chat.id)

@@ -11,7 +11,7 @@ from telegram.ext.dispatcher import run_async, DispatcherHandlerStop, Dispatcher
 from telegram.utils.helpers import escape_markdown
 
 from emilia import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, DONATION_LINK, CERT_PATH, PORT, URL, LOGGER, \
-    ALLOW_EXCL
+    ALLOW_EXCL, spamfilters
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from emilia.modules import ALL_MODULES
@@ -122,6 +122,9 @@ def test(bot: Bot, update: Update):
 
 @run_async
 def start(bot: Bot, update: Update, args: List[str]):
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
@@ -232,6 +235,10 @@ def help_button(bot: Bot, update: Update):
 def get_help(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     args = update.effective_message.text.split(None, 1)
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     # ONLY send help in PM
     if chat.type != chat.PRIVATE:
@@ -353,6 +360,10 @@ def get_settings(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
     args = msg.text.split(None, 1)
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     # ONLY send settings in PM
     if chat.type != chat.PRIVATE:
         if is_user_admin(chat, user.id):
@@ -373,6 +384,10 @@ def get_settings(bot: Bot, update: Update):
 def donate(bot: Bot, update: Update):
     user = update.effective_message.from_user
     chat = update.effective_chat  # type: Optional[Chat]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     if chat.type == "private":
         update.effective_message.reply_text(DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
@@ -509,7 +524,6 @@ def process_update(self, update):
         # Errors should not stop the thread.
         except Exception:
             self.logger.exception('An uncaught error was raised while processing the update')
-
 
 if __name__ == '__main__':
     LOGGER.info("Successfully loaded modules: " + str(ALL_MODULES))

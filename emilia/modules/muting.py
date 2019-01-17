@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, Filters
 from telegram.ext.dispatcher import run_async
 from telegram.utils.helpers import mention_html
 
-from emilia import dispatcher, LOGGER
+from emilia import dispatcher, LOGGER, spamfilters
 from emilia.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_admin, can_restrict
 from emilia.modules.helper_funcs.extraction import extract_user, extract_user_and_text
 from emilia.modules.helper_funcs.string_handling import extract_time
@@ -20,6 +20,9 @@ from emilia.modules.log_channel import loggable
 @user_admin
 @loggable
 def mute(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -67,6 +70,9 @@ def mute(bot: Bot, update: Update, args: List[str]) -> str:
 @user_admin
 @loggable
 def unmute(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -119,6 +125,9 @@ def unmute(bot: Bot, update: Update, args: List[str]) -> str:
 @user_admin
 @loggable
 def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]

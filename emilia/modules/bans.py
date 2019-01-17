@@ -6,7 +6,7 @@ from telegram.error import BadRequest
 from telegram.ext import run_async, CommandHandler, Filters
 from telegram.utils.helpers import mention_html
 
-from emilia import dispatcher, BAN_STICKER, LOGGER
+from emilia import dispatcher, BAN_STICKER, LOGGER, spamfilters
 from emilia.modules.disable import DisableAbleCommandHandler
 from emilia.modules.helper_funcs.chat_status import bot_admin, user_admin, is_user_ban_protected, can_restrict, \
     is_user_admin, is_user_in_chat
@@ -24,6 +24,10 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     user_id, reason = extract_user_and_text(message, args)
 
@@ -92,6 +96,10 @@ def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     user_id, reason = extract_user_and_text(message, args)
 
@@ -180,6 +188,10 @@ def kick(bot: Bot, update: Update, args: List[str]) -> str:
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     user_id, reason = extract_user_and_text(message, args)
 
     if not user_id:
@@ -241,6 +253,10 @@ def kickme(bot: Bot, update: Update):
         update.effective_message.reply_text("Saya berharap saya bisa... tetapi Anda seorang admin 😒")
         return
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
     res = update.effective_chat.unban_member(user_id)  # unban on current user = kick
     if res:
         update.effective_message.reply_text("Tidak masalah 😊")
@@ -257,6 +273,10 @@ def unban(bot: Bot, update: Update, args: List[str]) -> str:
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user  # type: Optional[User]
     chat = update.effective_chat  # type: Optional[Chat]
+
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
     user_id, reason = extract_user_and_text(message, args)
 
