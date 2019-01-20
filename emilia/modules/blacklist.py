@@ -50,8 +50,8 @@ def blacklist(bot: Bot, update: Update, args: List[str]):
         for trigger in all_blacklisted:
             filter_list += " - <code>{}</code>\n".format(html.escape(trigger))
 
-    for trigger in all_blacklisted:
-        filter_list += " - <code>{}</code>\n".format(html.escape(trigger))
+    # for trigger in all_blacklisted:
+    #     filter_list += " - <code>{}</code>\n".format(html.escape(trigger))
 
     split_text = split_message(filter_list)
     for text in split_text:
