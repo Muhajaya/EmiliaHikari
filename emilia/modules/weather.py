@@ -176,11 +176,14 @@ def accuweather(bot, update, args):
         cuaca += "*Tekanan:* `{}` (`{} mb`)\n".format(datas.get('PressureTendency').get('LocalizedText'), datas.get('Pressure').get('Metric').get('Value'))
 
         lok = []
+        lok.append(data.get('LocalizedName'))
+        lok.append(data.get('AdministrativeArea').get('LocalizedName'))
+        lok.append(data.get('Country').get('LocalizedName'))
         for x in reversed(range(len(data.get('SupplementalAdminAreas')))):
             lok.append(data.get('SupplementalAdminAreas')[x].get('LocalizedName'))
         teks = "*Cuaca di {} saat ini*\n".format(data.get('LocalizedName'))
         teks += "{}\n".format(cuaca)
-        teks += "*Lokasi:* `{}, {}, {}, {}`\n\n".format(data.get('LocalizedName'), ", ".join(lok), data.get('AdministrativeArea').get('LocalizedName'), data.get('Country').get('LocalizedName'))
+        teks += "*Lokasi:* `{}`\n\n".format(", ".join(lok))
         teks += "Untuk lebih lanjut silahkan cek cuacanya [disini]({}) atau [disini]({})".format(datas.get('MobileLink'), datas.get('Link'))
 
         #try:

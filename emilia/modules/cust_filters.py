@@ -27,7 +27,7 @@ def list_handlers(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
 
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     
@@ -71,7 +71,7 @@ def filters(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
     args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
@@ -160,7 +160,7 @@ def stop_filter(bot: Bot, update: Update):
     user = update.effective_user  # type: Optional[User]
     args = update.effective_message.text.split(None, 1)
 
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
@@ -230,21 +230,37 @@ def reply_filter(bot: Bot, update: Update):
                                        reply_markup=keyboard)
                 except BadRequest as excp:
                     if excp.message == "Unsupported url protocol":
-                        message.reply_text("Anda tampaknya mencoba menggunakan protokol url yang tidak didukung. Telegram "
-                                           "tidak mendukung tombol untuk beberapa protokol, seperti tg://. Silakan coba "
-                                           "lagi.")
+                        try:
+                            message.reply_text("Anda tampaknya mencoba menggunakan protokol url yang tidak didukung. Telegram "
+                                               "tidak mendukung tombol untuk beberapa protokol, seperti tg://. Silakan coba "
+                                               "lagi.")
+                        except BadRequest as excp:
+                            LOGGER.exception("Gagal mengirim pesan: " + excp.message)
+                            pass
                     elif excp.message == "Reply message not found":
-                        bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
-                                         disable_web_page_preview=True,
-                                         reply_markup=keyboard)
+                        try:
+                            bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
+                                             disable_web_page_preview=True,
+                                             reply_markup=keyboard)
+                        except BadRequest as excp:
+                            LOGGER.exception("Gagal mengirim pesan: " + excp.message)
+                            pass
                     else:
-                        message.reply_text("Catatan ini tidak dapat dikirim karena formatnya salah.")
+                        try:
+                            message.reply_text("Catatan ini tidak dapat dikirim karena formatnya salah.")
+                        except BadRequest as excp:
+                            LOGGER.exception("Gagal mengirim pesan: " + excp.message)
+                            pass
                         LOGGER.warning("Message %s could not be parsed", str(filt.reply))
                         LOGGER.exception("Could not parse filter %s in chat %s", str(filt.keyword), str(chat.id))
 
             else:
                 # LEGACY - all new filters will have has_markdown set to True.
-                message.reply_text(filt.reply)
+                try:
+                    message.reply_text(filt.reply)
+                except BadRequest as excp:
+                    LOGGER.exception("Gagal mengirim pesan: " + excp.message)
+                    pass
             break
 
 
