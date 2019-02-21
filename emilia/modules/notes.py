@@ -99,9 +99,13 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
             try:
                 if note.msgtype in (sql.Types.BUTTON_TEXT, sql.Types.TEXT):
-                    bot.send_message(send_id, text, reply_to_message_id=reply_id,
-                                     parse_mode=parseMode, disable_web_page_preview=True,
-                                     reply_markup=keyboard)
+                    try:
+                        bot.send_message(send_id, text, reply_to_message_id=reply_id,
+                                         parse_mode=parseMode, disable_web_page_preview=True,
+                                         reply_markup=keyboard)
+                    except BadRequest as excp:
+                        print("Gagal mengirim catatan: " + excp.message)
+                        pass
                 else:
                     ENUM_FUNC_MAP[note.msgtype](send_id, note.file, caption=text, reply_to_message_id=reply_id,
                                                 parse_mode=parseMode, disable_web_page_preview=True,
@@ -128,7 +132,7 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
 @run_async
 def cmd_get(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if len(args) >= 2 and args[1].lower() == "noformat":
@@ -141,7 +145,7 @@ def cmd_get(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def hash_get(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message.text
@@ -154,7 +158,7 @@ def hash_get(bot: Bot, update: Update):
 @run_async
 @user_admin
 def save(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -201,7 +205,7 @@ def save(bot: Bot, update: Update):
 @run_async
 @user_admin
 def clear(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -235,7 +239,7 @@ def clear(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def list_notes(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
