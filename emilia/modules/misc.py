@@ -141,7 +141,7 @@ GMAPS_TIME = "https://maps.googleapis.com/maps/api/timezone/json"
 
 @run_async
 def runs(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send messages
@@ -149,7 +149,7 @@ def runs(bot: Bot, update: Update):
 
 @run_async
 def slap(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
@@ -200,7 +200,7 @@ def get_bot_ip(bot: Bot, update: Update):
 
 @run_async
 def get_id(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
@@ -233,7 +233,7 @@ def get_id(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def info(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message
@@ -292,7 +292,7 @@ def info(bot: Bot, update: Update, args: List[str]):
 
 @run_async
 def get_time(bot: Bot, update: Update, args: List[str]):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     location = " ".join(args)
@@ -376,7 +376,7 @@ Perlu diingat bahwa pesan Anda <b>HARUS</b> berisi beberapa teks selain hanya se
 
 @run_async
 def markdown_help(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     bot.sendChatAction(update.effective_chat.id, "typing") # Bot typing before send message

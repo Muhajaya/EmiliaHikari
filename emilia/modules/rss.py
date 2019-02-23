@@ -12,7 +12,7 @@ from emilia.modules.sql import rss_sql as sql
 
 def show_url(bot, update, args):
     tg_chat_id = str(update.effective_chat.id)
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
@@ -55,7 +55,7 @@ def show_url(bot, update, args):
 
 
 def list_urls(bot, update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     tg_chat_id = str(update.effective_chat.id)
@@ -79,7 +79,7 @@ def list_urls(bot, update):
 
 @user_admin
 def add_url(bot, update, args):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if len(args) >= 1:
@@ -116,7 +116,7 @@ def add_url(bot, update, args):
 
 @user_admin
 def remove_url(bot, update, args):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if len(args) >= 1:

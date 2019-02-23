@@ -241,7 +241,7 @@ def left_member(bot: Bot, update: Update):
 @run_async
 @user_admin
 def security(bot: Bot, update: Update, args: List[str]) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -267,7 +267,7 @@ def security(bot: Bot, update: Update, args: List[str]) -> str:
 @run_async
 @user_admin
 def cleanservice(bot: Bot, update: Update, args: List[str]) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -386,7 +386,7 @@ def goodbye(bot: Bot, update: Update, args: List[str]):
 @user_admin
 @loggable
 def set_welcome(bot: Bot, update: Update) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -413,7 +413,7 @@ def set_welcome(bot: Bot, update: Update) -> str:
 @user_admin
 @loggable
 def reset_welcome(bot: Bot, update: Update) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -431,7 +431,7 @@ def reset_welcome(bot: Bot, update: Update) -> str:
 @user_admin
 @loggable
 def set_goodbye(bot: Bot, update: Update) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -456,7 +456,7 @@ def set_goodbye(bot: Bot, update: Update) -> str:
 @user_admin
 @loggable
 def reset_goodbye(bot: Bot, update: Update) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -474,7 +474,7 @@ def reset_goodbye(bot: Bot, update: Update) -> str:
 @user_admin
 @loggable
 def clean_welcome(bot: Bot, update: Update, args: List[str]) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
@@ -538,7 +538,7 @@ WELC_HELP_TXT = "Pesan selamat datang/selamat tinggal grup Anda dapat dipersonal
 @run_async
 @user_admin
 def welcome_help(bot: Bot, update: Update):
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     update.effective_message.reply_text(WELC_HELP_TXT, parse_mode=ParseMode.MARKDOWN)

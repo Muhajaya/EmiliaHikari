@@ -18,7 +18,7 @@ REPORT_GROUP = 5
 @run_async
 @user_admin
 def report_setting(bot: Bot, update: Update, args: List[str]):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat = update.effective_chat  # type: Optional[Chat]
@@ -56,7 +56,7 @@ def report_setting(bot: Bot, update: Update, args: List[str]):
 @user_not_admin
 @loggable
 def report(bot: Bot, update: Update) -> str:
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	message = update.effective_message  # type: Optional[Message]

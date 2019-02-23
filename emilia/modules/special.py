@@ -94,7 +94,7 @@ RAMALAN_STRINGS = (
 
 @run_async
 def stickerid(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -111,7 +111,7 @@ def stickerid(bot: Bot, update: Update):
 
 @run_async
 def fileid(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -128,7 +128,7 @@ def fileid(bot: Bot, update: Update):
 
 @run_async
 def getsticker(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -155,7 +155,7 @@ def getsticker(bot: Bot, update: Update):
 
 @run_async
 def stiker(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat_id = update.effective_chat.id
@@ -169,7 +169,7 @@ def stiker(bot: Bot, update: Update):
 
 @run_async
 def file(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	chat_id = update.effective_chat.id
@@ -217,7 +217,7 @@ def leavechat(bot: Bot, update: Update, args: List[int]):
 
 @run_async
 def ping(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	start_time = time.time()
@@ -229,14 +229,14 @@ def ping(bot: Bot, update: Update):
 
 @run_async
 def ramalan(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	update.effective_message.reply_text(random.choice(RAMALAN_STRINGS))    
 
 @run_async
 def terjemah(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -317,7 +317,7 @@ def terjemah(bot: Bot, update: Update):
 
 @run_async
 def wiki(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -344,7 +344,7 @@ def wiki(bot: Bot, update: Update):
 
 @run_async
 def kamusbesarbahasaindonesia(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message
@@ -365,7 +365,7 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 
 @run_async
 def kitabgaul(bot: Bot, update: Update):
-	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 	msg = update.effective_message

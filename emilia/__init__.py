@@ -69,6 +69,7 @@ if ENV:
     BAN_STICKER = os.environ.get('BAN_STICKER', 'CAADBAAD4kYAAuOnXQW5LUN400QOBQI')
     ALLOW_EXCL = os.environ.get('ALLOW_EXCL', False)
     API_WEATHER = os.environ.get('API_OPENWEATHER', None)
+    API_ACCUWEATHER = os.environ.get('API_ACCUWEATHER', None)
 
 else:
     from emilia.config import Development as Config
@@ -116,6 +117,7 @@ else:
     BAN_STICKER = Config.BAN_STICKER
     ALLOW_EXCL = Config.ALLOW_EXCL
     API_WEATHER = Config.API_OPENWEATHER
+    API_ACCUWEATHER = Config.API_ACCUWEATHER
 
 
 SUDO_USERS.add(OWNER_ID)
@@ -139,8 +141,8 @@ tg.RegexHandler = CustomRegexHandler
 if ALLOW_EXCL:
     tg.CommandHandler = CustomCommandHandler
 
-def spamfilters(text, user_id):
-    print("{} | {}".format(text, user_id))
+def spamfilters(text, user_id, chat_id):
+    print("{} | {} | {}".format(text, user_id, chat_id))
     if int(user_id) in SPAMMERS:
         print("This user is spammers!")
         return True

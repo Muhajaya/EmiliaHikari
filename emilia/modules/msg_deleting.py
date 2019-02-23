@@ -16,7 +16,7 @@ from emilia.modules.log_channel import loggable
 @user_admin
 @loggable
 def purge(bot: Bot, update: Update, args: List[str]) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     msg = update.effective_message  # type: Optional[Message]
@@ -68,7 +68,7 @@ def purge(bot: Bot, update: Update, args: List[str]) -> str:
 @user_admin
 @loggable
 def del_message(bot: Bot, update: Update) -> str:
-    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id)
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     if update.effective_message.reply_to_message:
