@@ -54,7 +54,7 @@ setiap sumbangan membantu dan memotivasi dia untuk membuat saya lebih baik.
 Semua uang sumbangan akan diberikan ke VPS yang lebih baik untuk menjadi tuan rumah saya, dan atau beberapa makanan. \
 Dia hanya orang biasa, jadi akan sangat membantu dia!
 
-Jika anda memang berminat untuk donate, silahkan PM [pencipta saya](tg://user?id=388576209), Terima kasih 😁"""
+Jika anda memang berminat untuk donate, silahkan kunjungi paypal.me/AyraHikari, Terima kasih 😁"""
 
 IMPORTED = {}
 MIGRATEABLE = []
