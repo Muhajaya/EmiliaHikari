@@ -13,14 +13,14 @@ from emilia.modules.helper_funcs.chat_status import bot_admin, user_admin, is_us
 from emilia.modules.helper_funcs.extraction import extract_user_and_text
 from emilia.modules.helper_funcs.string_handling import extract_time
 from emilia.modules.log_channel import loggable
+from emilia.modules.connection import connected
 
 
 @run_async
-@bot_admin
-@can_restrict
 @user_admin
 @loggable
 def ban(bot: Bot, update: Update, args: List[str]) -> str:
+    currentchat = update.effective_chat  # type: Optional[Chat]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -31,15 +31,51 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
 
     user_id, reason = extract_user_and_text(message, args)
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member':
+        if conn:
+            text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+        else:
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
+    else:
+        if check['can_restrict_members'] == False:
+            if conn:
+                text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+            else:
+                text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+            message.reply_text(text, parse_mode="markdown")
+            return ""
+
     if not user_id:
         message.reply_text("Anda sepertinya tidak mengacu pada pengguna.")
         return ""
 
     try:
-        member = chat.get_member(user_id)
+        if conn:
+            member = bot.getChatMember(chat_id, user_id)
+        else:
+            member = chat.get_member(user_id)
     except BadRequest as excp:
         if excp.message == "User not found":
-            message.reply_text("Saya tidak dapat menemukan pengguna ini 😣")
+            if conn:
+                text = "Saya tidak dapat menemukan pengguna ini pada *{}* 😣".format(chat_name)
+            else:
+                text = "Saya tidak dapat menemukan pengguna ini 😣"
+            message.reply_text(text, parse_mode="markdown")
             return ""
         else:
             raise
@@ -52,9 +88,13 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Saya benar-benar berharap bisa banned orang ini... 😞")
         return ""
 
-    check = bot.getChatMember(chat.id, user.id)
+    check = bot.getChatMember(chat_id, user.id)
     if check['can_restrict_members'] == False:
-        message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
+        if conn:
+            text = "Anda tidak punya hak untuk membatasi seseorang pada *{}*.".format(chat_name)
+        else:
+            text = "Anda tidak punya hak untuk membatasi seseorang."
+        message.reply_text(text, parse_mode="markdown")
         return ""
 
     log = "<b>{}:</b>" \
@@ -68,9 +108,14 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
         log += "\n<b>Alasan:</b> {}".format(reason)
 
     try:
-        chat.kick_member(user_id)
-        bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
-        message.reply_text("Terbanned! 😝")
+        if conn:
+            bot.kickChatMember(chat_id, user_id)
+            bot.send_sticker(currentchat.id, BAN_STICKER)  # banhammer marie sticker
+            message.reply_text("Terbanned pada *{}*! 😝".format(chat_name), parse_mode="markdown")
+        else:
+            chat.kick_member(user_id)
+            bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+            message.reply_text("Terbanned! 😝")
         return log
 
     except BadRequest as excp:
@@ -88,11 +133,10 @@ def ban(bot: Bot, update: Update, args: List[str]) -> str:
 
 
 @run_async
-@bot_admin
-@can_restrict
 @user_admin
 @loggable
 def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
+    currentchat = update.effective_chat  # type: Optional[Chat]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -103,12 +147,44 @@ def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
 
     user_id, reason = extract_user_and_text(message, args)
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member':
+        if conn:
+            text = "Saya tidak bisa membatasi orang di *{}*! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+        else:
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
+    else:
+        if check['can_restrict_members'] == False:
+            if conn:
+                text = "Saya tidak bisa membatasi orang di *{}*! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+            else:
+                text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+            message.reply_text(text, parse_mode="markdown")
+            return ""
+
     if not user_id:
         message.reply_text("Anda sepertinya tidak mengacu pada pengguna.")
         return ""
 
     try:
-        member = chat.get_member(user_id)
+        if conn:
+            member = bot.getChatMember(chat_id, user_id)
+        else:
+            member = chat.get_member(user_id)
     except BadRequest as excp:
         if excp.message == "User not found":
             message.reply_text("Saya tidak dapat menemukan pengguna ini")
@@ -159,9 +235,14 @@ def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
         log += "\n<b>Reason:</b> {}".format(reason)
 
     try:
-        chat.kick_member(user_id, until_date=bantime)
-        bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
-        message.reply_text("Banned! Pengguna diblokir untuk {}.".format(time_val))
+        if conn:
+            bot.kickChatMember(chat_id, user_id, until_date=bantime)
+            bot.send_sticker(currentchat.id, BAN_STICKER)  # banhammer marie sticker
+            message.reply_text("Banned! Pengguna diblokir untuk *{}* pada *{}*.".format(time_val, chat_name), parse_mode="markdown")
+        else:
+            chat.kick_member(user_id, until_date=bantime)
+            bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+            message.reply_text("Banned! Pengguna diblokir untuk {}.".format(time_val))
         return log
 
     except BadRequest as excp:
@@ -179,11 +260,10 @@ def temp_ban(bot: Bot, update: Update, args: List[str]) -> str:
 
 
 @run_async
-@bot_admin
-@can_restrict
 @user_admin
 @loggable
 def kick(bot: Bot, update: Update, args: List[str]) -> str:
+    currentchat = update.effective_chat  # type: Optional[Chat]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
@@ -194,11 +274,43 @@ def kick(bot: Bot, update: Update, args: List[str]) -> str:
 
     user_id, reason = extract_user_and_text(message, args)
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member':
+        if conn:
+            text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+        else:
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
+    else:
+        if check['can_restrict_members'] == False:
+            if conn:
+                text = "Saya tidak bisa membatasi orang di *{}*! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+            else:
+                text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+            message.reply_text(text, parse_mode="markdown")
+            return ""
+
     if not user_id:
         return ""
 
     try:
-        member = chat.get_member(user_id)
+        if conn:
+            member = bot.getChatMember(chat_id, user_id)
+        else:
+            member = chat.get_member(user_id)
     except BadRequest as excp:
         if excp.message == "User not found":
             message.reply_text("Saya tidak dapat menemukan pengguna ini")
@@ -223,10 +335,18 @@ def kick(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
-    res = chat.unban_member(user_id)  # unban on current user = kick
+    if conn:
+        res = bot.unbanChatMember(chat_id, user_id)  # unban on current user = kick
+    else:
+        res = chat.unban_member(user_id)  # unban on current user = kick
     if res:
-        bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
-        message.reply_text("Tertendang! 😝")
+        if conn:
+            bot.send_sticker(currentchat.id, BAN_STICKER)  # banhammer marie sticker
+            text = "Tertendang pada *{}*! 😝".format(chat_name)
+        else:
+            bot.send_sticker(chat.id, BAN_STICKER)  # banhammer marie sticker
+            text = "Tertendang! 😝"
+        message.reply_text(text, parse_mode="markdown")
         log = "<b>{}:</b>" \
               "\n#KICKED" \
               "\n<b>Admin:</b> {}" \
@@ -265,8 +385,6 @@ def kickme(bot: Bot, update: Update):
 
 
 @run_async
-@bot_admin
-@can_restrict
 @user_admin
 @loggable
 def unban(bot: Bot, update: Update, args: List[str]) -> str:
@@ -280,11 +398,43 @@ def unban(bot: Bot, update: Update, args: List[str]) -> str:
 
     user_id, reason = extract_user_and_text(message, args)
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
     if not user_id:
         return ""
 
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member':
+        if conn:
+            text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+        else:
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
+    else:
+        if check['can_restrict_members'] == False:
+            if conn:
+                text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+            else:
+                text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+            message.reply_text(text, parse_mode="markdown")
+            return ""
+
     try:
-        member = chat.get_member(user_id)
+        if conn:
+            member = bot.getChatMember(chat_id, user_id)
+        else:
+            member = chat.get_member(user_id)
     except BadRequest as excp:
         if excp.message == "User not found":
             message.reply_text("Saya tidak dapat menemukan pengguna ini")
@@ -305,8 +455,12 @@ def unban(bot: Bot, update: Update, args: List[str]) -> str:
         message.reply_text("Anda tidak punya hak untuk membatasi seseorang.")
         return ""
 
-    chat.unban_member(user_id)
-    message.reply_text("Ya, pengguna ini dapat bergabung! 😁")
+    if conn:
+        bot.unbanChatMember(chat_id, user_id)
+        message.reply_text("Ya, pengguna ini dapat bergabung pada {}! 😁".format(chat_name))
+    else:
+        chat.unban_member(user_id)
+        message.reply_text("Ya, pengguna ini dapat bergabung! 😁")
 
     log = "<b>{}:</b>" \
           "\n#UNBANNED" \
@@ -333,10 +487,10 @@ __help__ = """
 
 __mod_name__ = "Banned"
 
-BAN_HANDLER = CommandHandler("ban", ban, pass_args=True, filters=Filters.group)
-TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True, filters=Filters.group)
-KICK_HANDLER = CommandHandler("kick", kick, pass_args=True, filters=Filters.group)
-UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True, filters=Filters.group)
+BAN_HANDLER = CommandHandler("ban", ban, pass_args=True)#, filters=Filters.group)
+TEMPBAN_HANDLER = CommandHandler(["tban", "tempban"], temp_ban, pass_args=True)#, filters=Filters.group)
+KICK_HANDLER = CommandHandler("kick", kick, pass_args=True)#, filters=Filters.group)
+UNBAN_HANDLER = CommandHandler("unban", unban, pass_args=True)#, filters=Filters.group)
 KICKME_HANDLER = DisableAbleCommandHandler("kickme", kickme, filters=Filters.group)
 
 dispatcher.add_handler(BAN_HANDLER)
