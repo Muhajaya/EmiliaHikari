@@ -13,6 +13,36 @@ from emilia.modules.helper_funcs.chat_status import bot_admin, user_admin, is_us
 from emilia.modules.helper_funcs.extraction import extract_user, extract_user_and_text
 from emilia.modules.helper_funcs.string_handling import extract_time
 
+supportcmd = """
+*Command yang support saat ini*
+
+*Anti Flood*
+-> `/setflood`
+-> `/flood`
+
+*Banned*
+-> `/ban`
+-> `/tban` | `/tempban`
+-> `/kick`
+-> `/unban`
+
+*Blacklist*
+-> `/blacklist`
+-> `/addblacklist`
+-> `/unblacklist` | `/rmblacklist`
+
+*Filter*
+-> `/filter`
+-> `/stop`
+-> `/filters`
+
+*Disabler*
+-> `/enable`
+-> `/disable`
+-> `/cmds`
+
+"""
+
 @user_admin
 @run_async
 def allow_connections(bot: Bot, update: Update, args: List[str]) -> str:
@@ -58,12 +88,19 @@ def connect_chat(bot, update, args):
                 if connection_status:
                     chat_name = dispatcher.bot.getChat(connected(bot, update, chat, user.id, need_admin=False)).title
                     update.effective_message.reply_text("Berhasil tersambung ke *{}*".format(chat_name), parse_mode=ParseMode.MARKDOWN)
+                    update.effective_message.reply_text(supportcmd, parse_mode="markdown")
                 else:
                     update.effective_message.reply_text("Koneksi gagal!")
             else:
                 update.effective_message.reply_text("Sambungan ke obrolan ini tidak diizinkan!")
         else:
-            update.effective_message.reply_text("Tulis ID obrolan untuk terhubung!")
+            conn = connected(bot, update, chat, user.id, need_admin=False)
+            if conn:
+                connectedchat = dispatcher.bot.getChat(conn)
+                text = "Anda telah terkoneksi pada *{}* (`{}`)".format(connectedchat.title, conn)
+                update.effective_message.reply_text(text, parse_mode="markdown")
+            else:
+                update.effective_message.reply_text("Tulis ID obrolan untuk terhubung!")
 
     else:
         update.effective_message.reply_text("Penggunaan terbatas hanya untuk PM!")

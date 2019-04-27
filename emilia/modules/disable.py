@@ -8,6 +8,7 @@ from telegram.utils.helpers import escape_markdown
 from emilia import dispatcher, spamfilters
 from emilia.modules.helper_funcs.handlers import CMD_STARTERS
 from emilia.modules.helper_funcs.misc import is_module_loaded
+from emilia.modules.connection import connected
 
 FILENAME = __name__.rsplit(".", 1)[-1]
 
@@ -68,9 +69,22 @@ if is_module_loaded(FILENAME):
     @user_admin
     def disable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
+        user = update.effective_user
         spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
         if spam == True:
             return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
+        conn = connected(bot, update, chat, user.id, need_admin=True)
+        if conn:
+            chat = dispatcher.bot.getChat(conn)
+            chat_id = conn
+            chat_name = dispatcher.bot.getChat(conn).title
+        else:
+            if update.effective_message.chat.type == "private":
+                return ""
+            chat = update.effective_chat
+            chat_id = update.effective_chat.id
+            chat_name = update.effective_message.chat.title
 
         if len(args) >= 1:
             disable_cmd = args[0]
@@ -79,7 +93,11 @@ if is_module_loaded(FILENAME):
 
             if disable_cmd in set(DISABLE_CMDS + DISABLE_OTHER):
                 sql.disable_command(chat.id, disable_cmd)
-                update.effective_message.reply_text("Menonaktifkan penggunaan `{}`".format(disable_cmd),
+                if conn:
+                    text = "Menonaktifkan penggunaan `{}` pada *{}*".format(disable_cmd, chat_name)
+                else:
+                    text = "Menonaktifkan penggunaan `{}`".format(disable_cmd)
+                update.effective_message.reply_text(text,
                                                     parse_mode=ParseMode.MARKDOWN)
             else:
                 update.effective_message.reply_text("Perintah itu tidak bisa dinonaktifkan")
@@ -92,9 +110,22 @@ if is_module_loaded(FILENAME):
     @user_admin
     def enable(bot: Bot, update: Update, args: List[str]):
         chat = update.effective_chat  # type: Optional[Chat]
+        user = update.effective_user
         spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
         if spam == True:
             return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
+        conn = connected(bot, update, chat, user.id, need_admin=True)
+        if conn:
+            chat = dispatcher.bot.getChat(conn)
+            chat_id = conn
+            chat_name = dispatcher.bot.getChat(conn).title
+        else:
+            if update.effective_message.chat.type == "private":
+                return ""
+            chat = update.effective_chat
+            chat_id = update.effective_chat.id
+            chat_name = update.effective_message.chat.title
 
         if len(args) >= 1:
             enable_cmd = args[0]
@@ -102,7 +133,11 @@ if is_module_loaded(FILENAME):
                 enable_cmd = enable_cmd[1:]
 
             if sql.enable_command(chat.id, enable_cmd):
-                update.effective_message.reply_text("Diaktifkan penggunaan `{}`".format(enable_cmd),
+                if conn:
+                    text = "Diaktifkan penggunaan `{}` pada *{}*".format(enable_cmd, chat_name)
+                else:
+                    text = "Diaktifkan penggunaan `{}`".format(enable_cmd)
+                update.effective_message.reply_text(text,
                                                     parse_mode=ParseMode.MARKDOWN)
             else:
                 update.effective_message.reply_text("Apakah itu bahkan dinonaktifkan?")
@@ -117,6 +152,7 @@ if is_module_loaded(FILENAME):
         spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
         if spam == True:
             return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
         if DISABLE_CMDS + DISABLE_OTHER:
             result = ""
             for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
@@ -142,10 +178,25 @@ if is_module_loaded(FILENAME):
     @run_async
     def commands(bot: Bot, update: Update):
         chat = update.effective_chat
-        update.effective_message.reply_text(build_curr_disabled(chat.id), parse_mode=ParseMode.MARKDOWN)
+        user = update.effective_user
         spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
         if spam == True:
             return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
+        conn = connected(bot, update, chat, user.id, need_admin=True)
+        if conn:
+            chat = dispatcher.bot.getChat(conn)
+            chat_id = conn
+            chat_name = dispatcher.bot.getChat(conn).title
+        else:
+            if update.effective_message.chat.type == "private":
+                return ""
+            chat = update.effective_chat
+            chat_id = update.effective_chat.id
+            chat_name = update.effective_message.chat.title
+
+        text = build_curr_disabled(chat.id)
+        update.effective_message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 
     def __stats__():
@@ -171,10 +222,10 @@ if is_module_loaded(FILENAME):
  - /listcmds: daftar semua perintah toggleable yang memungkinkan
     """
 
-    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True, filters=Filters.group)
-    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True, filters=Filters.group)
-    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands, filters=Filters.group)
-    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds, filters=Filters.group)
+    DISABLE_HANDLER = CommandHandler("disable", disable, pass_args=True)#, filters=Filters.group)
+    ENABLE_HANDLER = CommandHandler("enable", enable, pass_args=True)#, filters=Filters.group)
+    COMMANDS_HANDLER = CommandHandler(["cmds", "disabled"], commands)#, filters=Filters.group)
+    TOGGLE_HANDLER = CommandHandler("listcmds", list_cmds)#, filters=Filters.group)
 
     dispatcher.add_handler(DISABLE_HANDLER)
     dispatcher.add_handler(ENABLE_HANDLER)
