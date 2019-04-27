@@ -14,6 +14,7 @@ from googletrans import Translator
 import wikipedia
 from kbbi import KBBI
 import base64
+from bs4 import BeautifulSoup
 
 import requests
 from telegram.error import BadRequest, Unauthorized
@@ -411,8 +412,20 @@ def kamusbesarbahasaindonesia(bot: Bot, update: Update):
 		args = update.effective_message.text.split(None, 1)
 		teks = args[1]
 		message = update.effective_message
-		kamusid = KBBI(teks)
-		message.reply_text("Hasil dari <b>{}</b> adalah:\n{}".format(teks, kamusid), parse_mode=ParseMode.HTML)
+		api = requests.get('http://kateglo.com/api.php?format=json&phrase='+teks).json()
+		#kamusid = KBBI(teks)
+		parsing = "***Hasil dari kata {} ({}) di {}***\n\n".format(api['kateglo']['phrase'], api['kateglo']['lex_class_name'], api['kateglo']['ref_source_name'])
+		if len(api['kateglo']['definition']) >= 6:
+			jarak = 5
+		else:
+			jarak = len(api['kateglo']['definition'])
+		for x in range(jarak):
+			parsing += "*{}.* {}".format(x+1, api['kateglo']['definition'][x]['def_text'])
+			contoh = api['kateglo']['definition'][x]['sample']
+			if contoh:
+				parsing += "\nContoh: `{}`".format(str(BeautifulSoup(contoh, "lxml")).replace('<html><body><p>', '').replace('</p></body></html>', ''))
+			parsing += "\n\n"
+		message.reply_text(parsing, parse_mode=ParseMode.MARKDOWN)
 
 	except IndexError:
 		update.effective_message.reply_text("Tulis pesan untuk mencari dari kamus besar bahasa indonesia")
