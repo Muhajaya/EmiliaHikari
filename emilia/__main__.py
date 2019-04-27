@@ -21,7 +21,7 @@ from emilia.modules.helper_funcs.misc import paginate_modules
 PM_START_TEXT = """
 Hai {}, nama saya {}! Saya seorang manajer grup yang dikelola oleh [master saya ini](tg://user?id={}).
 Script saya menggunakan script Marie, tetapi berbeda dalam bahasa, server, code, dan lainnya.
-Untuk mendapatkan info status bot ini, anda dapat bergabung dengan channel kami @EmiliaNews
+Untuk mendapatkan info status bot ini, anda dapat bergabung dengan channel kami [Emilia Bot News](https://t.me/joinchat/AAAAAELUyNq4Ys1r1zU-RA)
 
 Anda dapat menemukan daftar perintah yang tersedia dengan /help.
 
