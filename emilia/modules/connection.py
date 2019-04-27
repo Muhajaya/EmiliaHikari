@@ -41,6 +41,11 @@ supportcmd = """
 -> `/disable`
 -> `/cmds`
 
+*Notes*
+-> `/get`
+-> `/save`
+-> `/clear`
+-> `/notes` | `/saved`
 """
 
 @user_admin
