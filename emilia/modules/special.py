@@ -330,6 +330,8 @@ def wiki(bot: Bot, update: Update):
 		pagewiki = wikipedia.page(teks)
 		judul = pagewiki.title
 		summary = pagewiki.summary
+		if len(summary) >= 4096:
+			summary = summary[:4000]+"..."
 		message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML)
 
 	except wikipedia.exceptions.PageError:

@@ -19,7 +19,7 @@ def reboot(bot: Bot, update: Update):
 	chat_id = update.effective_chat.id
 	update.effective_message.reply_text("Rebooting...", parse_mode=ParseMode.MARKDOWN)
 	try:
-		os.system("cd /home/emiliabeta/ && python3.6 -m emilia &")
+		os.system("cd /home/ayra/emilia/ && python3.6 -m emilia &")
 		os.system('kill %d' % os.getpid())
 		update.effective_message.reply_text("Reboot Berhasil!", parse_mode=ParseMode.MARKDOWN)
 	except:
@@ -38,7 +38,7 @@ def executor(bot: Bot, update: Update):
 			bot.send_message(chat, "*Gagal:* {}".format(error), parse_mode=ParseMode.MARKDOWN, reply_to_message_id=msg.message_id)
 
 
-REBOOT_HANDLER = DisableAbleCommandHandler("reboot", reboot, filters=Filters.user(OWNER_ID))
+REBOOT_HANDLER = DisableAbleCommandHandler("emreboot", reboot, filters=Filters.user(OWNER_ID))
 EXEC_HANDLER = DisableAbleCommandHandler("emil", executor, filters=Filters.user(OWNER_ID))
 
 #dispatcher.add_handler(REBOOT_HANDLER)
