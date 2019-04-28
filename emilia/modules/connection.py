@@ -86,16 +86,20 @@ def allow_connections(bot: Bot, update: Update, args: List[str]) -> str:
             var = args[0]
             if (var == "no" or var == "tidak"):
                 sql.set_allow_connect_to_chat(chat.id, False)
-                update.effective_message.reply_text("Sambungan yang dinonaktifkan ke obrolan ini untuk pengguna")
+                update.effective_message.reply_text("Sambungan telah dinonaktifkan untuk obrolan ini")
             elif(var == "yes" or var == "ya"):
                 sql.set_allow_connect_to_chat(chat.id, True)
-                update.effective_message.reply_text("Mengaktifkan koneksi ke obrolan ini untuk pengguna")
+                update.effective_message.reply_text("Koneksi di aktifkan untuk obrolan ini")
             else:
                 update.effective_message.reply_text("Silakan masukkan ya atau tidak!", parse_mode=ParseMode.MARKDOWN)
         else:
-            update.effective_message.reply_text("Silakan masukkan ya atau tidak!", parse_mode=ParseMode.MARKDOWN)
+            get_settings = sql.allow_connect_to_chat(chat.id)
+            if get_settings:
+                update.effective_message.reply_text("Koneksi pada grup ini di *Di Izinkan* untuk member!", parse_mode=ParseMode.MARKDOWN)
+            else:
+                update.effective_message.reply_text("Koneksi pada grup ini di *Tidak Izinkan* untuk member!", parse_mode=ParseMode.MARKDOWN)
     else:
-        update.effective_message.reply_text("Silakan masukkan ya atau tidak di grup Anda!", parse_mode=ParseMode.MARKDOWN)
+        update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
 
 
 @run_async
@@ -113,11 +117,10 @@ def connect_chat(bot, update, args):
                 connect_chat = int(args[0])
             except ValueError:
                 update.effective_message.reply_text(chat.id, "ID Obrolan tidak valid!")
-            if (bot.get_chat_member(connect_chat, update.effective_message.from_user.id).status in ('administrator', 'creator') or 
-                                     (sql.allow_connect_to_chat(connect_chat) == True) and 
-                                     bot.get_chat_member(connect_chat, update.effective_message.from_user.id).status in ('member')) or (
-                                     user.id in SUDO_USERS):
-
+            isadmin = bot.get_chat_member(connect_chat, update.effective_message.from_user.id).status in ('administrator', 'creator')
+            ismember = bot.get_chat_member(connect_chat, update.effective_message.from_user.id).status in ('member')
+            isallow = sql.allow_connect_to_chat(connect_chat)
+            if (isadmin) or (isallow and ismember) or (user.id in SUDO_USERS):
                 connection_status = sql.connect(update.effective_message.from_user.id, connect_chat)
                 if connection_status:
                     chat_name = dispatcher.bot.getChat(connected(bot, update, chat, user.id, need_admin=False)).title
@@ -162,10 +165,10 @@ def connected(bot, update, chat, user_id, need_admin=True):
         
     if chat.type == chat.PRIVATE and sql.get_connected_chat(user_id):
         conn_id = sql.get_connected_chat(user_id).chat_id
-        if (bot.get_chat_member(conn_id, user_id).status in ('administrator', 'creator') or 
-                                     (sql.allow_connect_to_chat(connect_chat) == True) and 
-                                     bot.get_chat_member(user_id, update.effective_message.from_user.id).status in ('member')) or (
-                                     user_id in SUDO_USERS):
+        isadmin = bot.get_chat_member(conn_id, update.effective_message.from_user.id).status in ('administrator', 'creator')
+        ismember = bot.get_chat_member(conn_id, update.effective_message.from_user.id).status in ('member')
+        isallow = sql.allow_connect_to_chat(conn_id)
+        if (isadmin) or (isallow and ismember) or (user.id in SUDO_USERS):
             if need_admin == True:
                 if bot.get_chat_member(conn_id, update.effective_message.from_user.id).status in ('administrator', 'creator') or user_id in SUDO_USERS:
                     return conn_id

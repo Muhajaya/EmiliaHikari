@@ -36,7 +36,7 @@ def send_rules(update, chat_id, from_pm=False):
         else:
             raise
 
-    conn = connected(bot, update, chat, user.id, need_admin=True)
+    conn = connected(bot, update, chat, user.id, need_admin=False)
     if conn:
         chat = dispatcher.bot.getChat(conn)
         chat_id = conn

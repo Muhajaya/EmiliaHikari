@@ -12,11 +12,12 @@ class ChatAccessConnectionSettings(BASE):
     chat_id = Column(String(14), primary_key=True)
     allow_connect_to_chat = Column(Boolean, default=True)
 
-    def __init__(self, chat_id):
+    def __init__(self, chat_id, allow_connect_to_chat):
         self.chat_id = str(chat_id)
+        self.allow_connect_to_chat = str(allow_connect_to_chat)
 
     def __repr__(self):
-        return "<Chat access settings ({})>".format(self.chat_id)
+        return "<Chat access settings ({}) is {}>".format(self.chat_id, self.allow_connect_to_chat)
 
 
 class Connection(BASE):
