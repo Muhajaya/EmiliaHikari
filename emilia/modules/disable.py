@@ -81,6 +81,7 @@ if is_module_loaded(FILENAME):
             chat_name = dispatcher.bot.getChat(conn).title
         else:
             if update.effective_message.chat.type == "private":
+                update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
                 return ""
             chat = update.effective_chat
             chat_id = update.effective_chat.id
@@ -122,6 +123,7 @@ if is_module_loaded(FILENAME):
             chat_name = dispatcher.bot.getChat(conn).title
         else:
             if update.effective_message.chat.type == "private":
+                update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
                 return ""
             chat = update.effective_chat
             chat_id = update.effective_chat.id
@@ -190,6 +192,7 @@ if is_module_loaded(FILENAME):
             chat_name = dispatcher.bot.getChat(conn).title
         else:
             if update.effective_message.chat.type == "private":
+                update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
                 return ""
             chat = update.effective_chat
             chat_id = update.effective_chat.id

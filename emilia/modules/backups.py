@@ -16,17 +16,32 @@ from emilia.modules.helper_funcs.msg_types import get_note_type
 from emilia.modules.rules import get_rules
 import emilia.modules.sql.rules_sql as rulessql
 from emilia.modules.sql import warns_sql as warnssql
+from emilia.modules.connection import connected
 
 @run_async
 @user_admin
 def import_data(bot: Bot, update):
 	msg = update.effective_message  # type: Optional[Message]
 	chat = update.effective_chat  # type: Optional[Chat]
+	user = update.effective_user  # type: Optional[User]
 	# TODO: allow uploading doc with command, not just as reply
 	# only work with a doc
 	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+
+	conn = connected(bot, update, chat, user.id, need_admin=True)
+	if conn:
+		chat = dispatcher.bot.getChat(conn)
+		chat_id = conn
+		chat_name = dispatcher.bot.getChat(conn).title
+	else:
+		if update.effective_message.chat.type == "private":
+			update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+			return ""
+		chat = update.effective_chat
+		chat_id = update.effective_chat.id
+		chat_name = update.effective_message.chat.title
 
 	if msg.reply_to_message and msg.reply_to_message.document:
 		try:
@@ -50,7 +65,11 @@ def import_data(bot: Bot, update):
 		# Check if backup is this chat
 		try:
 			if data.get(str(chat.id)) == None:
-				return msg.reply_text("Backup berasal chat lain, Saya tidak bisa mengembalikan chat lain kedalam chat ini")
+				if conn:
+					text = "Backup berasal chat lain, Saya tidak bisa mengembalikan chat lain kedalam chat *{}*".format(chat_name)
+				else:
+					text = "Backup berasal chat lain, Saya tidak bisa mengembalikan chat lain kedalam chat ini"
+				return msg.reply_text(text, parse_mode="markdown")
 		except:
 			return msg.reply_text("Telah terjadi error dalam pengecekan data, silahkan laporkan kepada pembuat saya "
 								  "untuk masalah ini untuk membuat saya lebih baik! Terima kasih! 🙂")
@@ -82,19 +101,39 @@ def import_data(bot: Bot, update):
 
 		# TODO: some of that link logic
 		# NOTE: consider default permissions stuff?
-		msg.reply_text("Cadangan sepenuhnya dikembalikan. Selamat datang kembali! 😀")
+		if conn:
+			text = "Cadangan sepenuhnya dikembalikan pada *{}*. Selamat datang kembali! 😀".format(chat_name)
+		else:
+			text = "Cadangan sepenuhnya dikembalikan. Selamat datang kembali! 😀"
+		msg.reply_text(text, parse_mode="markdown")
 
 
 @run_async
 @user_admin
 def export_data(bot: Bot, update: Update, chat_data):
 	msg = update.effective_message  # type: Optional[Message]
+	user = update.effective_user  # type: Optional[User]
 	spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
 	if spam == True:
 		return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
 
 	chat_id = update.effective_chat.id
 	chat = update.effective_chat
+	current_chat_id = update.effective_chat.id
+
+	conn = connected(bot, update, chat, user.id, need_admin=True)
+	if conn:
+		chat = dispatcher.bot.getChat(conn)
+		chat_id = conn
+		chat_name = dispatcher.bot.getChat(conn).title
+	else:
+		if update.effective_message.chat.type == "private":
+			update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+			return ""
+		chat = update.effective_chat
+		chat_id = update.effective_chat.id
+		chat_name = update.effective_message.chat.title
+
 	jam = time.time()
 	new_jam = jam + 86400
 	cek = get_chat(chat_id, chat_data)
@@ -159,10 +198,10 @@ def export_data(bot: Bot, update: Update, chat_data):
 	f=open("cadangan{}.backup".format(chat_id), "w")
 	f.write(str(catatan))
 	f.close()
-	bot.sendChatAction(chat_id, "upload_document")
+	bot.sendChatAction(current_chat_id, "upload_document")
 	tgl = time.strftime("%H:%M:%S - %d/%m/%Y", time.localtime(time.time()))
 	bot.sendMessage(-1001405078933, "*Berhasil mencadangan untuk:*\nNama chat: `{}`\nID chat: `{}`\nPada: `{}`".format(chat.title, chat_id, tgl), parse_mode=ParseMode.MARKDOWN)
-	bot.sendDocument(chat_id, document=open('cadangan{}.backup'.format(chat_id), 'rb'), caption="*Berhasil mencadangan untuk:*\nNama chat: `{}`\nID chat: `{}`\nPada: `{}`\n\nNote: cadangan ini khusus untuk bot ini, jika di import ke bot lain maka catatan dokumen, video, audio, voice, dan lain-lain akan hilang".format(chat.title, chat_id, tgl), timeout=360, reply_to_message_id=msg.message_id, parse_mode=ParseMode.MARKDOWN)
+	bot.sendDocument(current_chat_id, document=open('cadangan{}.backup'.format(chat_id), 'rb'), caption="*Berhasil mencadangan untuk:*\nNama chat: `{}`\nID chat: `{}`\nPada: `{}`\n\nNote: cadangan ini khusus untuk bot ini, jika di import ke bot lain maka catatan dokumen, video, audio, voice, dan lain-lain akan hilang".format(chat.title, chat_id, tgl), timeout=360, reply_to_message_id=msg.message_id, parse_mode=ParseMode.MARKDOWN)
 	os.remove("cadangan{}.backup".format(chat_id)) # Cleaning file
 
 # Temporary data

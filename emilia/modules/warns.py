@@ -19,6 +19,7 @@ from emilia.modules.helper_funcs.misc import split_message
 from emilia.modules.helper_funcs.string_handling import split_quotes
 from emilia.modules.log_channel import loggable
 from emilia.modules.sql import warns_sql as sql
+from emilia.modules.connection import connected
 
 WARN_HANDLER_GROUP = 9
 CURRENT_WARNING_FILTER_STRING = "<b>Filter peringatan saat ini dalam obrolan ini:</b>\n"
@@ -82,11 +83,13 @@ def warn(user: User, chat: Chat, reason: str, message: Message, warner: User = N
                                                                   user.id, reason, num_warns, limit)
 
     try:
-        message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+        message.bot.sendMessage(chat.id, reply, reply_to_message_id=message.message_id, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+        #message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML)
     except BadRequest as excp:
         if excp.message == "Reply message not found":
             # Do not reply
-            message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML, quote=False)
+            message.bot.sendMessage(chat.id, reply, reply_to_message_id=message.message_id, reply_markup=keyboard, parse_mode=ParseMode.HTML, quote=False)
+            #message.reply_text(reply, reply_markup=keyboard, parse_mode=ParseMode.HTML, quote=False)
         else:
             raise
     return log_reason
@@ -126,7 +129,7 @@ def button(bot: Bot, update: Update) -> str:
 
 @run_async
 @user_admin
-@can_restrict
+#@can_restrict
 @loggable
 def warn_user(bot: Bot, update: Update, args: List[str]) -> str:
     spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
@@ -135,14 +138,42 @@ def warn_user(bot: Bot, update: Update, args: List[str]) -> str:
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     warner = update.effective_user  # type: Optional[User]
+    user = update.effective_user
 
     user_id, reason = extract_user_and_text(message, args)
 
-    if user_id:
-        if message.reply_to_message and message.reply_to_message.from_user.id == user_id:
-            return warn(message.reply_to_message.from_user, chat, reason, message.reply_to_message, warner)
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member' or check['can_restrict_members'] == False:
+        if conn:
+            text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
         else:
-            return warn(chat.get_member(user_id).user, chat, reason, message, warner)
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
+
+    if user_id:
+        if conn:
+            warning = warn(chat.get_member(user_id).user, chat, reason, message, warner)
+            update.effective_message.reply_text("Saya sudah memperingatinya pada grup *{}*".format(chat_name), parse_mode="markdown")
+            return warning
+        else:
+            if message.reply_to_message and message.reply_to_message.from_user.id == user_id:
+                return warn(message.reply_to_message.from_user, chat, reason, message.reply_to_message, warner)
+            else:
+                return warn(chat.get_member(user_id).user, chat, reason, message, warner)
     else:
         message.reply_text("Tidak ada pengguna yang ditunjuk!")
     return ""
@@ -150,7 +181,7 @@ def warn_user(bot: Bot, update: Update, args: List[str]) -> str:
 
 @run_async
 @user_admin
-@bot_admin
+#@bot_admin
 @loggable
 def reset_warns(bot: Bot, update: Update, args: List[str]) -> str:
     spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
@@ -161,10 +192,35 @@ def reset_warns(bot: Bot, update: Update, args: List[str]) -> str:
     user = update.effective_user  # type: Optional[User]
 
     user_id = extract_user(message, args)
+
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
+    check = bot.getChatMember(chat_id, bot.id)
+    if check.status == 'member' or check['can_restrict_members'] == False:
+        if conn:
+            text = "Saya tidak bisa membatasi orang di {}! Pastikan saya admin dan dapat menunjuk admin baru.".format(chat_name)
+        else:
+            text = "Saya tidak bisa membatasi orang di sini! Pastikan saya admin dan dapat menunjuk admin baru."
+        message.reply_text(text, parse_mode="markdown")
+        return ""
     
     if user_id:
         sql.reset_warns(user_id, chat.id)
-        message.reply_text("Peringatan telah disetel ulang!")
+        if conn:
+            message.reply_text("Peringatan telah disetel ulang pada *{}*!".format(chat_name), parse_mode="markdown")
+        else:
+            message.reply_text("Peringatan telah disetel ulang!")
         warned = chat.get_member(user_id).user
         return "<b>{}:</b>" \
                "\n#RESETWARNS" \
@@ -185,6 +241,21 @@ def warns(bot: Bot, update: Update, args: List[str]):
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
     user_id = extract_user(message, args) or update.effective_user.id
     result = sql.get_warns(user_id, chat.id)
 
@@ -193,18 +264,28 @@ def warns(bot: Bot, update: Update, args: List[str]):
         limit, soft_warn = sql.get_warn_setting(chat.id)
 
         if reasons:
-            text = "Pengguna ini memiliki {}/{} peringatan, untuk alasan berikut:".format(num_warns, limit)
+            if conn:
+                text = "Pengguna ini memiliki {}/{} peringatan pada *{}*, untuk alasan berikut:".format(num_warns, limit, chat_name)
+            else:
+                text = "Pengguna ini memiliki {}/{} peringatan, untuk alasan berikut:".format(num_warns, limit)
             for reason in reasons:
                 text += "\n - {}".format(reason)
 
             msgs = split_message(text)
             for msg in msgs:
-                update.effective_message.reply_text(msg)
+                update.effective_message.reply_text(msg, parse_mode="markdown")
         else:
-            update.effective_message.reply_text(
-                "Pengguna ini memiliki {}/{} peringatan, tetapi tidak ada alasan untuk itu.".format(num_warns, limit))
+            if conn:
+                update.effective_message.reply_text(
+                    "Pengguna ini memiliki {}/{} peringatan pada *{}*, tetapi tidak ada alasan untuk itu.".format(num_warns, limit, chat_name), parse_mode="markdown")
+            else:
+                update.effective_message.reply_text(
+                    "Pengguna ini memiliki {}/{} peringatan, tetapi tidak ada alasan untuk itu.".format(num_warns, limit))
     else:
-        update.effective_message.reply_text("Pengguna ini belum mendapatkan peringatan apa pun!")
+        if conn:
+            update.effective_message.reply_text("Pengguna ini belum mendapatkan peringatan apa pun pada *{}*!".format(chat_name), parse_mode="markdown")
+        else:
+            update.effective_message.reply_text("Pengguna ini belum mendapatkan peringatan apa pun!")
 
 
 # Dispatcher handler stop - do not async
@@ -215,6 +296,20 @@ def add_warn_filter(bot: Bot, update: Update):
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
+    user = update.effective_user  # type: Optional[User]
+
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
 
     args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
@@ -238,7 +333,11 @@ def add_warn_filter(bot: Bot, update: Update):
 
     sql.add_warn_filter(chat.id, keyword, content)
 
-    update.effective_message.reply_text("Peringatkan handler yang ditambahkan untuk '{}'!".format(keyword))
+    if conn:
+        text = "Peringatkan handler yang ditambahkan untuk '{}' pada *{}*!".format(keyword, chat_name)
+    else:
+        text = "Peringatkan handler yang ditambahkan untuk '{}'!".format(keyword)
+    update.effective_message.reply_text(text, parse_mode="markdown")
     raise DispatcherHandlerStop
 
 
@@ -249,6 +348,20 @@ def remove_warn_filter(bot: Bot, update: Update):
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
+    user = update.effective_user  # type: Optional[User]
+
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
 
     args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
@@ -262,7 +375,11 @@ def remove_warn_filter(bot: Bot, update: Update):
 
     chat_filters = sql.get_chat_warn_triggers(chat.id)
     if not chat_filters:
-        msg.reply_text("Tidak ada filter peringatan aktif di sini!")
+        if conn:
+            text = "Tidak ada filter peringatan aktif di *{}*!".format(chat_name)
+        else:
+            text = "Tidak ada filter peringatan aktif di sini!"
+        msg.reply_text(text)
         return
 
     nowarn = 0
@@ -281,13 +398,25 @@ def remove_warn_filter(bot: Bot, update: Update):
                 success += "`{}` ".format(to_remove)
                 inwarn += 1
     if nowarn == 0:
-        msg.reply_text("Ya, saya akan berhenti memperingatkan orang-orang untuk {}.".format(success), parse_mode=ParseMode.MARKDOWN)
+        if conn:
+            text = "Ya, saya akan berhenti memperingatkan orang-orang untuk {} pada *{}*.".format(success, chat_name)
+        else:
+            text = "Ya, saya akan berhenti memperingatkan orang-orang untuk {}.".format(success)
+        msg.reply_text(text, parse_mode=ParseMode.MARKDOWN)
         raise DispatcherHandlerStop
     elif inwarn == 0:
-        msg.reply_text("Gagal menghapus filter warn untuk {}.".format(fail), parse_mode=ParseMode.MARKDOWN)
+        if conn:
+            text = "Gagal menghapus filter warn untuk {} pada *{}*.".format(fail, chat_name)
+        else:
+            text = "Gagal menghapus filter warn untuk {}.".format(fail)
+        msg.reply_text(text, parse_mode=ParseMode.MARKDOWN)
         raise DispatcherHandlerStop
     else:
-        msg.reply_text("Ya, saya akan berhenti memperingatkan orang-orang untuk {}.\nDan gagal menghapus filter warn untuk {}.".format(success, fail), parse_mode=ParseMode.MARKDOWN)
+        if conn:
+            text = "Ya, saya akan berhenti memperingatkan orang-orang untuk {}.\nDan gagal menghapus filter warn untuk {}.\nPada *{}*".format(success, fail, chat_name)
+        else:
+            text = "Ya, saya akan berhenti memperingatkan orang-orang untuk {}.\nDan gagal menghapus filter warn untuk {}.".format(success, fail)
+        msg.reply_text(text, parse_mode=ParseMode.MARKDOWN)
         raise DispatcherHandlerStop
 
     """
@@ -302,7 +431,11 @@ def remove_warn_filter(bot: Bot, update: Update):
                 raise DispatcherHandlerStop
     """
 
-    msg.reply_text("Itu bukan filter peringatan saat ini - jalankan /warnlist untuk semua filter peringatan aktif.")
+    if conn:
+        text = "Itu bukan filter peringatan saat ini - jalankan /warnlist untuk semua filter peringatan aktif pada *{}*."
+    else:
+        text = "Itu bukan filter peringatan saat ini - jalankan /warnlist untuk semua filter peringatan aktif."
+    msg.reply_text(text, parse_mode="markdown")
 
 
 @run_async
@@ -311,13 +444,34 @@ def list_warn_filters(bot: Bot, update: Update):
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
     all_handlers = sql.get_chat_warn_triggers(chat.id)
 
     if not all_handlers:
-        update.effective_message.reply_text("Tidak ada filter peringatan aktif di sini!")
+        if conn:
+            text = "Tidak ada filter peringatan aktif di *{}*!".format(chat_name)
+        else:
+            text = "Tidak ada filter peringatan aktif di sini!"
+        update.effective_message.reply_text(text, parse_mode="markdown")
         return
 
     filter_list = CURRENT_WARNING_FILTER_STRING
+    if conn:
+        filter_list = filter_list.replace('obrolan ini', 'obrolan *{}*'.format(chat_name))
     for keyword in all_handlers:
         entry = " - {}\n".format(html.escape(keyword))
         if len(entry) + len(filter_list) > telegram.MAX_MESSAGE_LENGTH:
@@ -361,13 +515,30 @@ def set_warn_limit(bot: Bot, update: Update, args: List[str]) -> str:
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
     if args:
         if args[0].isdigit():
             if int(args[0]) < 3:
                 msg.reply_text("Batas peringatan minimum adalah 3!")
             else:
                 sql.set_warn_limit(chat.id, int(args[0]))
-                msg.reply_text("Diperbarui batas untuk diperingatkan {}".format(args[0]))
+                if conn:
+                    text = "Diperbarui batas untuk diperingatkan {} pada *{}*".format(args[0], chat_name)
+                else:
+                    text = "Diperbarui batas untuk diperingatkan {}".format(args[0])
+                msg.reply_text(text, parse_mode="markdown")
                 return "<b>{}:</b>" \
                        "\n#SET_WARN_LIMIT" \
                        "\n<b>Admin:</b> {}" \
@@ -377,8 +548,11 @@ def set_warn_limit(bot: Bot, update: Update, args: List[str]) -> str:
             msg.reply_text("Beri aku angkanya!")
     else:
         limit, soft_warn = sql.get_warn_setting(chat.id)
-
-        msg.reply_text("Batas peringatan saat ini adalah {}".format(limit))
+        if conn:
+            text = "Batas peringatan saat ini adalah {} pada *{}*".format(limit, chat_name)
+        else:
+            text = "Batas peringatan saat ini adalah {}".format(limit)
+        msg.reply_text(text, parse_mode="markdown")
     return ""
 
 
@@ -392,10 +566,27 @@ def set_warn_strength(bot: Bot, update: Update, args: List[str]):
     user = update.effective_user  # type: Optional[User]
     msg = update.effective_message  # type: Optional[Message]
 
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
+
     if args:
         if args[0].lower() in ("on", "yes"):
             sql.set_warn_strength(chat.id, False)
-            msg.reply_text("Terlalu banyak peringatan sekarang akan menghasilkan blokir!")
+            if conn:
+                text = "Terlalu banyak peringatan sekarang akan menghasilkan blokir pada *{}*!".format(chat_name)
+            else:
+                text = "Terlalu banyak peringatan sekarang akan menghasilkan blokir!"
+            msg.reply_text(text, parse_mode="markdown")
             return "<b>{}:</b>\n" \
                    "<b>Admin:</b> {}\n" \
                    "Telah mengaktifkan peringatan yang kuat. Pengguna akan diblokir.".format(html.escape(chat.title),
@@ -403,7 +594,11 @@ def set_warn_strength(bot: Bot, update: Update, args: List[str]):
 
         elif args[0].lower() in ("off", "no"):
             sql.set_warn_strength(chat.id, True)
-            msg.reply_text("Terlalu banyak peringatan akan menghasilkan tendangan! Pengguna akan dapat bergabung lagi.")
+            if conn:
+                text = "Terlalu banyak peringatan akan menghasilkan tendangan pada *{}*! Pengguna akan dapat bergabung lagi.".format(chat_name)
+            else:
+                text = "Terlalu banyak peringatan akan menghasilkan tendangan! Pengguna akan dapat bergabung lagi."
+            msg.reply_text(text, parse_mode="markdown")
             return "<b>{}:</b>\n" \
                    "<b>Admin:</b> {}\n" \
                    "Telah menonaktifkan peringatan kuat. Pengguna hanya akan ditendang.".format(html.escape(chat.title),
@@ -415,10 +610,18 @@ def set_warn_strength(bot: Bot, update: Update, args: List[str]):
     else:
         limit, soft_warn = sql.get_warn_setting(chat.id)
         if soft_warn:
-            msg.reply_text("Peringatan saat ini disetel ke *tendangan* pengguna saat melampaui batas.",
+            if conn:
+                text = "Peringatan saat ini disetel ke *tendangan* pengguna saat melampaui batas pada *{}*.".format(chat_name)
+            else:
+                text = "Peringatan saat ini disetel ke *tendangan* pengguna saat melampaui batas."
+            msg.reply_text(text,
                            parse_mode=ParseMode.MARKDOWN)
         else:
-            msg.reply_text("Peringatan saat ini disetel untuk *diblokir* pengguna saat melampaui batas.",
+            if conn:
+                text = "Peringatan saat ini disetel untuk *diblokir* pengguna saat melampaui batas pada *{}*.".format(chat_name)
+            else:
+                text = "Peringatan saat ini disetel untuk *diblokir* pengguna saat melampaui batas."
+            msg.reply_text(text,
                            parse_mode=ParseMode.MARKDOWN)
     return ""
 
@@ -464,16 +667,16 @@ Sedangkan off, hanya akan menendang.
 
 __mod_name__ = "Peringatan"
 
-WARN_HANDLER = CommandHandler("warn", warn_user, pass_args=True, filters=Filters.group)
-RESET_WARN_HANDLER = CommandHandler(["resetwarn", "resetwarns"], reset_warns, pass_args=True, filters=Filters.group)
+WARN_HANDLER = CommandHandler("warn", warn_user, pass_args=True)#, filters=Filters.group)
+RESET_WARN_HANDLER = CommandHandler(["resetwarn", "resetwarns", "rmwarn"], reset_warns, pass_args=True)#, filters=Filters.group)
 CALLBACK_QUERY_HANDLER = CallbackQueryHandler(button, pattern=r"rm_warn")
-MYWARNS_HANDLER = DisableAbleCommandHandler("warns", warns, pass_args=True, filters=Filters.group)
-ADD_WARN_HANDLER = CommandHandler("addwarn", add_warn_filter, filters=Filters.group)
-RM_WARN_HANDLER = CommandHandler(["nowarn", "stopwarn"], remove_warn_filter, filters=Filters.group)
-LIST_WARN_HANDLER = DisableAbleCommandHandler(["warnlist", "warnfilters"], list_warn_filters, filters=Filters.group, admin_ok=True)
+MYWARNS_HANDLER = DisableAbleCommandHandler("warns", warns, pass_args=True)#, filters=Filters.group)
+ADD_WARN_HANDLER = CommandHandler("addwarn", add_warn_filter)#, filters=Filters.group)
+RM_WARN_HANDLER = CommandHandler(["nowarn", "stopwarn"], remove_warn_filter)#, filters=Filters.group)
+LIST_WARN_HANDLER = DisableAbleCommandHandler(["warnlist", "warnfilters"], list_warn_filters)#, filters=Filters.group, admin_ok=True)
 WARN_FILTER_HANDLER = MessageHandler(CustomFilters.has_text & Filters.group, reply_filter)
-WARN_LIMIT_HANDLER = CommandHandler("warnlimit", set_warn_limit, pass_args=True, filters=Filters.group)
-WARN_STRENGTH_HANDLER = CommandHandler("strongwarn", set_warn_strength, pass_args=True, filters=Filters.group)
+WARN_LIMIT_HANDLER = CommandHandler("warnlimit", set_warn_limit, pass_args=True)#, filters=Filters.group)
+WARN_STRENGTH_HANDLER = CommandHandler("strongwarn", set_warn_strength, pass_args=True)#, filters=Filters.group)
 
 dispatcher.add_handler(WARN_HANDLER)
 dispatcher.add_handler(CALLBACK_QUERY_HANDLER)

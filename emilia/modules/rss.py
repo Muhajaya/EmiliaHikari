@@ -2,7 +2,7 @@ import html
 import re
 
 from feedparser import parse
-from telegram import ParseMode, constants
+from telegram import ParseMode, constants, error
 from telegram.ext import CommandHandler
 
 from emilia import dispatcher, updater, spamfilters
@@ -178,10 +178,16 @@ def rss_update(bot, job):
                 final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))
 
                 if len(final_message) <= constants.MAX_MESSAGE_LENGTH:
-                    bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
+                    try:
+                        bot.send_message(chat_id=tg_chat_id, text=final_message, parse_mode=ParseMode.HTML)
+                    except error.Unauthorized:
+                        print("Cannot send msg bcz bot is kicked")
                 else:
-                    bot.send_message(chat_id=tg_chat_id, text="<b>Peringatan:</b> Pesan terlalu panjang untuk dikirim",
+                    try:
+                        bot.send_message(chat_id=tg_chat_id, text="<b>Peringatan:</b> Pesan terlalu panjang untuk dikirim",
                                      parse_mode=ParseMode.HTML)
+                    except error.Unauthorized:
+                        print("Cannot send msg bcz bot is kicked")
         else:
             for link, title in zip(reversed(new_entry_links[-5:]), reversed(new_entry_titles[-5:])):
                 final_message = "<b>{}</b>\n\n{}".format(html.escape(title), html.escape(link))

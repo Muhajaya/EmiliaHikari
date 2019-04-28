@@ -31,21 +31,50 @@ supportcmd = """
 -> `/addblacklist`
 -> `/unblacklist` | `/rmblacklist`
 
-*Filter*
--> `/filter`
--> `/stop`
--> `/filters`
+*Bisukan Pengguna*
+-> `/mute`
+-> `/unmute`
+-> `/tmute`
 
 *Disabler*
 -> `/enable`
 -> `/disable`
 -> `/cmds`
 
+*Filter*
+-> `/filter`
+-> `/stop`
+-> `/filters`
+
 *Notes*
 -> `/get`
 -> `/save`
 -> `/clear`
 -> `/notes` | `/saved`
+
+*Penguncian*
+-> `/lock`
+-> `/unlock`
+-> `/locks`
+
+*Peraturan*
+-> `/rules`
+-> `/setrules`
+-> `/clearrules`
+
+*Pencadangan*
+-> `/import`
+-> `/export`
+
+*Peringatan*
+-> `/warn`
+-> `/resetwarn` | `/resetwarns`
+-> `/warns`
+-> `/addwarn`
+-> `/nowarn` | `/stopwarn`
+-> `/warnlist` | `/warnfilters`
+-> `/warnlimit`
+-> `/strongwarn`
 """
 
 @user_admin
@@ -152,18 +181,27 @@ def connected(bot, update, chat, user_id, need_admin=True):
     else:
         return False
 
+@run_async
+def help_connect_chat(bot, update, args):
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
 
+    spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
+    if spam == True:
+        return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
+    if update.effective_message.chat.type != "private":
+        update.effective_message.reply_text("PM saya dengan command itu untuk mendapatkan bantuan Koneksi")
+        return
+    else:
+        update.effective_message.reply_text(supportcmd, parse_mode="markdown")
 
 __help__ = """
-Tindakan tersedia dengan grup yang terhubung:
- • Lihat dan edit catatan
- • Lihat dan edit filter
- • Lihat dan edit blacklist
- • Lebih banyak di masa kedepannya!
+Atur grup anda via PM dengan mudah.
 
  - /connect <chatid>: Hubungkan ke obrolan jarak jauh
  - /disconnect: Putuskan sambungan dari obrolan
  - /allowconnect on/yes/off/no: Izinkan menghubungkan pengguna ke grup
+ - /helpconnect: Dapatkan bantuan command untuk koneksi
 """
 
 __mod_name__ = "Koneksi"
@@ -171,7 +209,9 @@ __mod_name__ = "Koneksi"
 CONNECT_CHAT_HANDLER = CommandHandler("connect", connect_chat, allow_edited=True, pass_args=True)
 DISCONNECT_CHAT_HANDLER = CommandHandler("disconnect", disconnect_chat, allow_edited=True)
 ALLOW_CONNECTIONS_HANDLER = CommandHandler("allowconnect", allow_connections, allow_edited=True, pass_args=True)
+HELP_CONNECT_CHAT_HANDLER = CommandHandler("helpconnect", help_connect_chat, allow_edited=True, pass_args=True)
 
 dispatcher.add_handler(CONNECT_CHAT_HANDLER)
 dispatcher.add_handler(DISCONNECT_CHAT_HANDLER)
 dispatcher.add_handler(ALLOW_CONNECTIONS_HANDLER)
+dispatcher.add_handler(HELP_CONNECT_CHAT_HANDLER)

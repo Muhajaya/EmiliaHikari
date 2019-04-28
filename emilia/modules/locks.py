@@ -17,6 +17,7 @@ from emilia.modules.helper_funcs.chat_status import can_delete, is_user_admin, u
 from emilia.modules.helper_funcs.filters import CustomFilters
 from emilia.modules.log_channel import loggable
 from emilia.modules.sql import users_sql
+from emilia.modules.connection import connected
 
 LOCK_TYPES = {'sticker': Filters.sticker,
               'audio': Filters.audio,
@@ -99,7 +100,6 @@ def locktypes(bot: Bot, update: Update):
 
 
 @user_admin
-@bot_can_delete
 @loggable
 def lock(bot: Bot, update: Update, args: List[str]) -> str:
     spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
@@ -108,11 +108,26 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
     message = update.effective_message  # type: Optional[Message]
-    if can_delete(chat, bot.id):
+    if can_delete(chat, bot.id) or update.effective_message.chat.type == "private":
         if len(args) >= 1:
             if args[0] in LOCK_TYPES:
+                # Connection check
+                conn = connected(bot, update, chat, user.id, need_admin=True)
+                if conn:
+                    chat = dispatcher.bot.getChat(conn)
+                    chat_id = conn
+                    chat_name = chat.title
+                    text = "Terkunci *{}* pesan untuk semua non-admin pada *{}*!".format(args[0], chat_name)
+                else:
+                    if update.effective_message.chat.type == "private":
+                        update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+                        return ""
+                    chat = update.effective_chat
+                    chat_id = update.effective_chat.id
+                    chat_name = update.effective_message.chat.title
+                    text = "Terkunci *{}* pesan untuk semua non-admin!".format(args[0])
                 sql.update_lock(chat.id, args[0], locked=True)
-                message.reply_text("Terkunci {} pesan untuk semua non-admin!".format(args[0]))
+                message.reply_text(text, parse_mode="markdown")
 
                 return "<b>{}:</b>" \
                        "\n#LOCK" \
@@ -121,12 +136,27 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                                                           mention_html(user.id, user.first_name), args[0])
 
             elif args[0] in RESTRICTION_TYPES:
+                # Connection check
+                conn = connected(bot, update, chat, user.id, need_admin=True)
+                if conn:
+                    chat = dispatcher.bot.getChat(conn)
+                    chat_id = conn
+                    chat_name = chat.title
+                    text = "Terkunci *{}* pesan untuk semua non-admin pada *{}*!".format(args[0], chat_name)
+                else:
+                    if update.effective_message.chat.type == "private":
+                        update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+                        return ""
+                    chat = update.effective_chat
+                    chat_id = update.effective_chat.id
+                    chat_name = update.effective_message.chat.title
+                    text = "Terkunci *{}* pesan untuk semua non-admin!".format(args[0])
                 sql.update_restriction(chat.id, args[0], locked=True)
                 if args[0] == "previews":
                     members = users_sql.get_chat_members(str(chat.id))
                     restr_members(bot, chat.id, members, messages=True, media=True, other=True)
 
-                message.reply_text("Terkunci {} pesan untuk semua non-admin!".format(args[0]))
+                message.reply_text(text, parse_mode="markdown")
                 return "<b>{}:</b>" \
                        "\n#LOCK" \
                        "\n<b>Admin:</b> {}" \
@@ -137,7 +167,7 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                 message.reply_text("Apa yang Anda coba untuk kunci...? Coba /locktypes untuk daftar kunci yang dapat dikunci")
 
     else:
-        message.reply_text("Saya bukan administrator, atau tidak punya hak menghapus.")
+        message.reply_text("Saya bukan admin, atau tidak punya hak menghapus.")
 
     return ""
 
@@ -155,8 +185,23 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
     if is_user_admin(chat, message.from_user.id):
         if len(args) >= 1:
             if args[0] in LOCK_TYPES:
+                # Connection check
+                conn = connected(bot, update, chat, user.id, need_admin=True)
+                if conn:
+                    chat = dispatcher.bot.getChat(conn)
+                    chat_id = conn
+                    chat_name = chat.title
+                    text = "Tidak terkunci *{}* untuk semua orang pada *{}*!".format(args[0], chat_name)
+                else:
+                    if update.effective_message.chat.type == "private":
+                        update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+                        return ""
+                    chat = update.effective_chat
+                    chat_id = update.effective_chat.id
+                    chat_name = update.effective_message.chat.title
+                    text = "Tidak terkunci *{}* untuk semua orang!".format(args[0])
                 sql.update_lock(chat.id, args[0], locked=False)
-                message.reply_text("Tidak terkunci {} untuk semua orang!".format(args[0]))
+                message.reply_text(text, parse_mode="markdown")
                 return "<b>{}:</b>" \
                        "\n#UNLOCK" \
                        "\n<b>Admin:</b> {}" \
@@ -164,6 +209,21 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
                                                             mention_html(user.id, user.first_name), args[0])
 
             elif args[0] in RESTRICTION_TYPES:
+                # Connection check
+                conn = connected(bot, update, chat, user.id, need_admin=True)
+                if conn:
+                    chat = dispatcher.bot.getChat(conn)
+                    chat_id = conn
+                    chat_name = chat.title
+                    text = "Tidak terkunci *{}* untuk semua orang pada *{}*!".format(args[0], chat_name)
+                else:
+                    if update.effective_message.chat.type == "private":
+                        update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+                        return ""
+                    chat = update.effective_chat
+                    chat_id = update.effective_chat.id
+                    chat_name = update.effective_message.chat.title
+                    text = "Tidak terkunci *{}* untuk semua orang!".format(args[0])
                 sql.update_restriction(chat.id, args[0], locked=False)
                 """
                 members = users_sql.get_chat_members(chat.id)
@@ -182,7 +242,7 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
                 elif args[0] == "all":
                     unrestr_members(bot, chat.id, members, True, True, True, True)
                 """
-                message.reply_text("Tidak terkunci {} untuk semua orang!".format(args[0]))
+                message.reply_text(text, parse_mode="markdown")
                 
                 return "<b>{}:</b>" \
                        "\n#UNLOCK" \
@@ -286,8 +346,25 @@ def list_locks(bot: Bot, update: Update):
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
     chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user
+
+    # Connection check
+    conn = connected(bot, update, chat, user.id, need_admin=True)
+    if conn:
+        chat = dispatcher.bot.getChat(conn)
+        chat_id = conn
+        chat_name = chat.title
+    else:
+        if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
+            return ""
+        chat = update.effective_chat
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_message.chat.title
 
     res = build_lock_message(chat.id)
+    if conn:
+        res = res.replace('obrolan ini', '*{}*'.format(chat_name))
 
     update.effective_message.reply_text(res, parse_mode=ParseMode.MARKDOWN)
 
@@ -318,9 +395,9 @@ Mengunci bot akan menghentikan non-admin menambahkan bots ke obrolan.
 __mod_name__ = "Kunci"
 
 LOCKTYPES_HANDLER = DisableAbleCommandHandler("locktypes", locktypes)
-LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True, filters=Filters.group)
-UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True, filters=Filters.group)
-LOCKED_HANDLER = CommandHandler("locks", list_locks, filters=Filters.group)
+LOCK_HANDLER = CommandHandler("lock", lock, pass_args=True)#, filters=Filters.group)
+UNLOCK_HANDLER = CommandHandler("unlock", unlock, pass_args=True)#, filters=Filters.group)
+LOCKED_HANDLER = CommandHandler("locks", list_locks)#, filters=Filters.group)
 
 dispatcher.add_handler(LOCK_HANDLER)
 dispatcher.add_handler(UNLOCK_HANDLER)

@@ -70,6 +70,7 @@ def set_flood(bot: Bot, update: Update, args: List[str]) -> str:
         chat_name = dispatcher.bot.getChat(conn).title
     else:
         if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
             return ""
         chat_id = update.effective_chat.id
         chat_name = update.effective_message.chat.title
@@ -135,6 +136,7 @@ def flood(bot: Bot, update: Update):
         chat_name = dispatcher.bot.getChat(conn).title
     else:
         if update.effective_message.chat.type == "private":
+            update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
             return
         chat_id = update.effective_chat.id
         chat_name = update.effective_message.chat.title
