@@ -446,7 +446,7 @@ def list_warn_filters(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
 
-    conn = connected(bot, update, chat, user.id, need_admin=True)
+    conn = connected(bot, update, chat, user.id, need_admin=False)
     if conn:
         chat = dispatcher.bot.getChat(conn)
         chat_id = conn

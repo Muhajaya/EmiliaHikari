@@ -62,7 +62,7 @@ def set_allow_connect_to_chat(chat_id: Union[int, str], setting: bool):
     with CHAT_ACCESS_LOCK:
         chat_setting = SESSION.query(ChatAccessConnectionSettings).get(str(chat_id))
         if not chat_setting:
-            chat_setting = ChatAccessConnectionSettings(chat_id)
+            chat_setting = ChatAccessConnectionSettings(chat_id, setting)
 
         chat_setting.allow_connect_to_chat = setting
         SESSION.add(chat_setting)

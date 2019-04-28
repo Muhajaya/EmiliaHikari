@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 import requests
 from telegram.error import BadRequest, Unauthorized
 from telegram import Message, Chat, Update, Bot, MessageEntity
-from telegram import ParseMode
+from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
 
@@ -387,9 +387,15 @@ def wiki(bot: Bot, update: Update):
 		pagewiki = wikipedia.page(teks)
 		judul = pagewiki.title
 		summary = pagewiki.summary
-		if len(summary) >= 4096:
-			summary = summary[:4000]+"..."
-		message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML)
+		if update.effective_message.chat.type == "private":
+			message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML)
+		else:
+			if len(summary) >= 200:
+				summary = summary[:200]+"..."
+				button = InlineKeyboardMarkup([[InlineKeyboardButton(text="Baca Lebih Lengkap", url="t.me/{}?start=wiki_{}".format(bot.username, teks))]])
+			else:
+				button = None
+			message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML, reply_markup=button)
 
 	except wikipedia.exceptions.PageError:
 		update.effective_message.reply_text("Hasil tidak ditemukan")

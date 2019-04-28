@@ -1,6 +1,7 @@
 import datetime
 import importlib
 import re
+import wikipedia
 from typing import Optional, List
 
 from telegram import Message, Chat, Update, Bot, User
@@ -141,6 +142,17 @@ def start(bot: Bot, update: Update, args: List[str]):
 
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
+
+            elif args[0][:4] == "wiki":
+                wiki = args[0].split("_")[1]
+                message = update.effective_message
+                wikipedia.set_lang("id")
+                pagewiki = wikipedia.page(wiki)
+                judul = pagewiki.title
+                summary = pagewiki.summary
+                if len(summary) >= 4096:
+                    summary = summary[:4000]+"..."
+                message.reply_text("<b>{}</b>\n{}".format(judul, summary), parse_mode=ParseMode.HTML)
 
         else:
             first_name = update.effective_user.first_name

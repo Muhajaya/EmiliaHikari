@@ -16,6 +16,28 @@ from emilia.modules.helper_funcs.string_handling import extract_time
 supportcmd = """
 *Command yang support saat ini*
 
+*「 Untuk Member Biasa 」*
+*Anti Flood*
+-> `/flood`
+
+*Blacklist*
+-> `/blacklist`
+
+*Filter*
+-> `/filters`
+
+*Notes*
+-> `/get`
+-> `/notes` | `/saved`
+
+*Peraturan*
+-> `/rules`
+
+*Peringatan*
+-> `/warns`
+-> `/warnlist` | `/warnfilters`
+
+*「 Hanya Untuk Admin 」*
 *Anti Flood*
 -> `/setflood`
 -> `/flood`
@@ -159,6 +181,7 @@ def disconnect_chat(bot, update):
 
 
 def connected(bot, update, chat, user_id, need_admin=True):
+    user = update.effective_user  # type: Optional[User]
     spam = spamfilters(update.effective_message.text, update.effective_message.from_user.id, update.effective_chat.id)
     if spam == True:
         return update.effective_message.reply_text("Saya kecewa dengan anda, saya tidak akan mendengar kata-kata anda sekarang!")
