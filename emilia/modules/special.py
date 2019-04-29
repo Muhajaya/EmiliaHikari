@@ -400,8 +400,9 @@ def wiki(bot: Bot, update: Update):
 			message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML)
 		else:
 			if len(summary) >= 200:
+				judul = pagewiki.title
 				summary = summary[:200]+"..."
-				button = InlineKeyboardMarkup([[InlineKeyboardButton(text="Baca Lebih Lengkap", url="t.me/{}?start=wiki_{}".format(bot.username, teks))]])
+				button = InlineKeyboardMarkup([[InlineKeyboardButton(text="Baca Lebih Lengkap", url="t.me/{}?start=wiki-{}".format(bot.username, teks.replace(' ', '_')))]])
 			else:
 				button = None
 			message.reply_text("Hasil dari {} adalah:\n\n<b>{}</b>\n{}".format(teks, judul, summary), parse_mode=ParseMode.HTML, reply_markup=button)

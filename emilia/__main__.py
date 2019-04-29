@@ -144,7 +144,7 @@ def start(bot: Bot, update: Update, args: List[str]):
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
 
             elif args[0][:4] == "wiki":
-                wiki = args[0].split("_")[1]
+                wiki = args[0].split("-")[1].replace('_', ' ')
                 message = update.effective_message
                 wikipedia.set_lang("id")
                 pagewiki = wikipedia.page(wiki)
