@@ -197,13 +197,13 @@ def connected(bot, update, chat, user_id, need_admin=True):
                     return conn_id
                 else:
                     update.effective_message.reply_text("Anda harus menjadi admin dalam grup yang terhubung!")
-                    exit(1)
+                    raise Exception("Bukan admin!")
             else:
                 return conn_id
         else:
             update.effective_message.reply_text("Grup mengubah koneksi hak atau Anda bukan admin lagi.\nSaya putuskan koneksi Anda.")
             disconnect_chat(bot, update)
-            exit(1)
+            raise Exception("Bukan admin!")
     else:
         return False
 

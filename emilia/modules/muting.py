@@ -176,7 +176,6 @@ def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
         chat = dispatcher.bot.getChat(conn)
         chat_id = conn
         chat_name = dispatcher.bot.getChat(conn).title
-        text = "Dibisukan untuk *{}* pada *{}*!".format(time_val, chat_name)
     else:
         if update.effective_message.chat.type == "private":
             update.effective_message.reply_text("Anda bisa lakukan command ini pada grup, bukan pada PM")
@@ -184,7 +183,6 @@ def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
         chat = update.effective_chat
         chat_id = update.effective_chat.id
         chat_name = update.effective_message.chat.title
-        text = "Dibisukan untuk *{}*!".format(time_val)
 
     try:
         member = chat.get_member(user_id)
@@ -237,6 +235,10 @@ def temp_mute(bot: Bot, update: Update, args: List[str]) -> str:
     try:
         if member.can_send_messages is None or member.can_send_messages:
             bot.restrict_chat_member(chat.id, user_id, until_date=mutetime, can_send_messages=False)
+            if conn:
+                text = "Dibisukan untuk *{}* pada *{}*!".format(time_val, chat_name)
+            else:
+                text = "Dibisukan untuk *{}*!".format(time_val)
             message.reply_text(text, parse_mode="markdown")
             return log
         else:
