@@ -15,6 +15,7 @@ import wikipedia
 from kbbi import KBBI
 import base64
 from bs4 import BeautifulSoup
+from emoji import UNICODE_EMOJI
 
 import requests
 from telegram.error import BadRequest, Unauthorized
@@ -319,7 +320,11 @@ def terjemah(bot: Bot, update: Update):
 				target2 = target.split("-")[1]
 				target = target.split("-")[0]
 			teks = msg.reply_to_message.text
-			teks = deEmojify(teks)
+			#teks = deEmojify(teks)
+			exclude_list = UNICODE_EMOJI.keys()
+			for emoji in exclude_list:
+				if emoji in teks:
+					teks = teks.replace(emoji, '')
 			message = update.effective_message
 			trl = Translator()
 			if target2 == None:
@@ -340,7 +345,11 @@ def terjemah(bot: Bot, update: Update):
 			args = update.effective_message.text.split(None, 2)
 			target = args[1]
 			teks = args[2]
-			teks = deEmojify(teks)
+			#teks = deEmojify(teks)
+			exclude_list = UNICODE_EMOJI.keys()
+			for emoji in exclude_list:
+				if emoji in teks:
+					teks = teks.replace(emoji, '')
 			target2 = None
 			if "-" in target:
 				target2 = target.split("-")[1]
