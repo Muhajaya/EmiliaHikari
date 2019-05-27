@@ -1,4 +1,4 @@
-# Emilia Hikari
+# Emilia
 Telegram modular Python bot berjalan di python3 dengan database sqlalchemy.
 
 Based on [marie bot](https://github.com/PaulSonOfLars/tgbot)
@@ -171,8 +171,7 @@ melalui perintah `/stats`, yang hanya tersedia untuk pemilik bot.
 
 
 ## Special Credits
-This is not kanged bot, but stupid gitlab and github have some errors on this git, so i just repush this shit and then all authorship is gone.
 
-Thanks to this user for some commands
+Thanks to this user:
 - [Paul Larsen](https://github.com/PaulSonOfLars) - marie creator, inspiration to do many things
 - [Yan Gorobtsov](https://github.com/MrYacha) - for welcome security base and connection base and maybe others
